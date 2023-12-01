@@ -123,17 +123,59 @@ def mapinner(f, items):
     for item in items:
         yield list(map(f, item))
 
+def find_simple_digit(s:str) -> str:
+    for c in s:
+        if c in "0123456789":
+            return c
+
 def part1(fname: str):
     with open(fname) as f:
         sections = read_sections(f)
     print(f'*** part 1 ***')
+    
+    total = 0
+    for line in sections[0]:
+        d1 = find_simple_digit(line)
+        d2 = find_simple_digit(line[::-1])
+        calibration = int(d1 + d2)
+        total += calibration
+    print(total)
+
+def find_complex_digit(s: str) -> tuple[str, str]:
+    pattern = r'''one|two|three|four|five|six|seven|eight|nine|[0123456789]'''
+    to_fwd_digit = {}
+    to_rev_digit = {}
+    
+    for i in range(10):
+        to_fwd_digit[str(i)] = str(i)
+        to_rev_digit[str(i)] = str(i)
+    for i, name in zip(
+        itertools.count(0),
+        ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+    ): 
+        to_fwd_digit[name] = str(i)
+        to_rev_digit[name[::-1]] = str(i)
+    
+    fwd_pattern = '|'.join(to_fwd_digit.keys())
+    rev_pattern = '|'.join(to_rev_digit.keys())    
+    
+    fwd_matches = re.findall(fwd_pattern, s)
+    rev_matches = re.findall(rev_pattern, s[::-1])
+    return to_fwd_digit[fwd_matches[0]], to_rev_digit[rev_matches[0]]
 
 def part2(fname: str):
     with open(fname) as f:
         sections = read_sections(f)
     print(f'*** part 2 ***')
+    total = 0
+    for line in sections[0]:
+        d1, d2 = find_complex_digit(line)
+        calibration = int(d1 + d2)
+        print(calibration, line)
+        total += calibration
+    print(total)
 
 if __name__ == '__main__':
-    part1(sys.argv[1])
+#    part1(sys.argv[1])
     part2(sys.argv[1])
     
