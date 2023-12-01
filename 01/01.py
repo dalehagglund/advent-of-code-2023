@@ -113,7 +113,7 @@ def seq(*funcs):
         return arg
     return _inner
 def compose(*funcs):
-    return seq(funcs[::-1])
+    return seq(*funcs[::-1])
 
 # map(seq(partial(map, f), list), ...)
 # map(compose(list, partial(map, f)), ...)
@@ -141,12 +141,39 @@ def part1(fname: str):
         total += calibration
     print(total)
     
-def find_complex_digit_2(s: str) -> tuple[str, str]:
-    numerals = "0123456789"
-    names = (
-        "zero", "one", "two", "three", "four", 
-        "five", "six", "seven", "eight", "nine"
+numerals = "0123456789"
+names = (
+    "zero", "one", "two", "three", "four", 
+    "five", "six", "seven", "eight", "nine"
+)
+
+def find_complex_digit_4(s: str) -> tuple[str, str]:
+    for numeral, name in zip(numerals, names):
+        s = s.replace(name, name + numeral + name)
+    digits = re.findall("[0123456789]", s)
+    return digits[0], digits[-1]
+
+def find_complex_digit_3(s: str) -> tuple[str, str]:
+    to_digit = {}
+    
+    for i, numeral, name in zip(itertools.count(0), numerals, names):
+        to_digit[numeral] = str(i)
+        to_digit[name] = str(i)
+
+    pattern = '|'.join(sorted(to_digit.keys()))
+
+    def digit_search(r: range) -> str:
+        for i in r:
+            m = re.match(pattern, s[i:])
+            if not m: continue
+            return to_digit[m.group(0)]
+
+    return (
+        digit_search(range(len(s))),
+        digit_search(range(-1, -len(s) - 1, -1))
     )
+    
+def find_complex_digit_2(s: str) -> tuple[str, str]:
     to_digit = {}
     
     for i, numeral, name in zip(itertools.count(0), numerals, names):
@@ -172,15 +199,12 @@ def find_complex_digit(s: str) -> tuple[str, str]:
     to_fwd_digit = {}
     to_rev_digit = {}
     
-    for i in range(10):
-        to_fwd_digit[str(i)] = str(i)
-        to_rev_digit[str(i)] = str(i)
-    for i, name in zip(
-        itertools.count(0),
-        ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
-    ): 
-        to_fwd_digit[name] = str(i)
-        to_rev_digit[name[::-1]] = str(i)
+    for numeral in numerals:
+        to_fwd_digit[numeral] = numeral
+        to_rev_digit[numeral] = numeral
+    for numeral, name in zip(numerals, names):
+        to_fwd_digit[name] = numeral
+        to_rev_digit[name[::-1]] = numeral
     
     fwd_pattern = '|'.join(to_fwd_digit.keys())
     rev_pattern = '|'.join(to_rev_digit.keys())    
@@ -195,13 +219,13 @@ def part2(fname: str):
     print(f'*** part 2 ***')
     total = 0
     for line in sections[0]:
-        d1, d2 = find_complex_digit_2(line)
+        d1, d2 = find_complex_digit_4(line)
         calibration = int(d1 + d2)
-        print(calibration, line)
+        # print(calibration, line)
         total += calibration
     print(total)
 
 if __name__ == '__main__':
-#    part1(sys.argv[1])
+    # part1(sys.argv[1])
     part2(sys.argv[1])
     
