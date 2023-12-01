@@ -140,9 +140,35 @@ def part1(fname: str):
         calibration = int(d1 + d2)
         total += calibration
     print(total)
+    
+def find_complex_digit_2(s: str) -> tuple[str, str]:
+    numerals = "0123456789"
+    names = (
+        "zero", "one", "two", "three", "four", 
+        "five", "six", "seven", "eight", "nine"
+    )
+    to_digit = {}
+    
+    for i, numeral, name in zip(itertools.count(0), numerals, names):
+        to_digit[numeral] = str(i)
+        to_digit[name] = str(i)
 
+    starting_chars = { k[0] for k in to_digit.keys() }
+    
+    firsts = '[' + ''.join(sorted(starting_chars)) + ']'
+    digit_pattern = '|'.join(to_digit.keys())
+
+    # I'm so very sorry for using `_`...
+    _ = re.finditer(firsts, s)
+    _ = map(lambda m: re.match(digit_pattern, s[m.start():]), _)
+    _ = filter(lambda m: m is not None, _)
+    _ = map(lambda m: m.group(0), _)
+    _ = map(lambda s: to_digit[s], _)
+    digits = list(_)
+    
+    return digits[0], digits[-1]
+    
 def find_complex_digit(s: str) -> tuple[str, str]:
-    pattern = r'''one|two|three|four|five|six|seven|eight|nine|[0123456789]'''
     to_fwd_digit = {}
     to_rev_digit = {}
     
@@ -169,7 +195,7 @@ def part2(fname: str):
     print(f'*** part 2 ***')
     total = 0
     for line in sections[0]:
-        d1, d2 = find_complex_digit(line)
+        d1, d2 = find_complex_digit_2(line)
         calibration = int(d1 + d2)
         print(calibration, line)
         total += calibration
