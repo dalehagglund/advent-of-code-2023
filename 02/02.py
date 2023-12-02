@@ -51,22 +51,37 @@ def part1(fname: str):
         sections = read_sections(f)
     print(f'*** part 1 ***')
 
-    maxbag = Draw(red=12, green=13, blue=14)
+    testbag = Draw(red=12, green=13, blue=14)
     
     def possible_draw(d: Draw) -> bool:
         return (
-            d.red <= maxbag.red and
-            d.green <= maxbag.green and
-            d.blue <= maxbag.blue
+            d.red <= testbag.red and
+            d.green <= testbag.green and
+            d.blue <= testbag.blue
         )
     def possible_game(g: Game) -> bool:
         return all(possible_draw(d) for d in g.draws)
     
     s = iter(sections[0])
     s = map(parse_game, s)
-    s = filter(possible_game, s)
+    games = collect(list, s)
     
-    print('sum', sum(g.id for g in s))
+    print('sum of possible', sum(g.id for g in games if possible_game(g)))
+    
+    def minbag(g: Game) -> Draw:
+        return Draw(
+            red = max(d.red for d in g.draws),
+            green = max(d.green for d in g.draws),
+            blue = max(d.blue for d in g.draws)
+        )
+        
+    s = iter(games)
+    s = map(minbag, s)
+    s = map(lambda d: d.red * d.blue * d.green, s)
+    power_sum = sum(s)
+    
+    print('power sum', power_sum)
+        
     
 def part2(fname: str):
     with open(fname) as f:
