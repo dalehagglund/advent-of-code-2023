@@ -23,34 +23,46 @@ def part1(fname: str):
     lines = sections[0]
     nrow = len(lines)
     ncol = len(lines[0])
-    
+
     non_symbols = set("0123456789.")    
 
-    def adjacent_syms(row, start, end):
-        syms = set()
-        for col in range(start, end):
-            for drow, dcol in product((-1, 0, 1), (-1, 0, 1)):
-                r, c = row + drow, col + dcol
-                if r < 0 or r >= nrow: continue
-                if c < 0 or c >= ncol: continue
-                if lines[r][c] not in non_symbols:
-                    syms.add((r, c, lines[r][c]))
-        return syms
+    def is_symbol(c: str): return c not in non_symbols
+
+    all_symbols = set(
+        (r, c)
+        for r, c
+        in product(nrow, ncol)
+        if is_symbol(lines[r][c])
+    )
+    
+    def number_locations():
+        for row, line in enumerate(lines):
+            for m in re.finditer(r"\d+", line):
+                yield (int(m.group()), row, m.start(), m.end())
+
+    def adjacent_cells(row, start, end):
+        s = itertools.chain(
+            ((row - 1, col) for col in range(start, end)),
+            ((row + 1, col) for col in range(start, end)),
+            ((r, start - 1) for r   in (row - 1, row, row + 1)),
+            ((r, end      ) for r   in (row - 1, row, row + 1))
+        )
+        s = filter(star(lambda r, _: r >= 0 and r < nrow), s)
+        s = filter(star(lambda _, c: c >= 0 and c < ncol), s)
+        return set(s)
         
     parts = []
-    gears = collections.defaultdict(lambda: [])
-    for row, line in enumerate(lines):
-        for m in re.finditer(r"\d+", line):
-            adjacent = adjacent_syms(row, m.start(0), m.end(0))
-            if len(adjacent) == 0:
-                continue
-            partnum = int(m.group(0))
-            if len(adjacent) > 0:
-                parts.append(partnum)
-            for r, c, symbol in adjacent:
-                if symbol != "*": continue
-                gears[(r, c)].append(partnum)
+    gears = collections.defaultdict(list)
 
+    for n, row, start, end in number_locations():
+        adjacent = adjacent_cells(row, start, end)
+        syms = adjacent & all_symbols
+        if len(syms) > 0:
+            parts.append(n)
+        for r, c in syms:
+            if lines[r][c] != "*": continue
+            gears[(r, c)].append(n)
+            
     print('part sum', sum(parts))
     print('ratio sum',
         sum(
@@ -60,7 +72,7 @@ def part1(fname: str):
             if len(parts) == 2
         )
     )
-    
+
 def part2(fname: str):
     with open(fname) as f:
         sections = read_sections(f)
