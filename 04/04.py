@@ -65,20 +65,19 @@ def solve2(lines: list[str]) -> int:
         in cards
     )
     
-    print('>> cards', '\n'.join(map(str, cards)))
-
-    print('>> matches', matches)
-    print('>> copies', copies)
+    #print('>> cards', '\n'.join(map(str, cards)))
+    #print('>> matches', matches)
+    #print('>> copies', copies)
     
     for id in range(1, len(cards)):
         count = copies[id]
         inc = matches[id]
-        print(f'>> card {id} count {count} matches {inc}')
+        #print(f'>> card {id} count {count} matches {inc}')
 
         for n in range(1, inc+1):
             copies[id + n] += count
             
-        print(f'>> after {id} copies', copies)
+        #print(f'>> after {id} copies', copies)
     
     return sum(copies)
 
