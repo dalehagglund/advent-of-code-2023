@@ -56,11 +56,11 @@ class Map:
         indices = iter(self._indices)
         src_iv = next(indices)
 
-        print(f'> map_intv: {(lo, hi) = }')
+        #print(f'> map_intv: {(lo, hi) = }')
         while lo < hi:
-            print(f'   > {(lo, hi) = } {src_iv = }')
+            #print(f'   > {(lo, hi) = } {src_iv = }')
             if lo >= src_iv.hi: 
-                print('   > skip')
+                #print('   > skip')
                 src_iv = next(indices)
                 continue
             assert lo >= src_iv.lo
@@ -75,7 +75,7 @@ class Map:
             delta = self._shift[src_iv]
             dst_iv = prefix.shift(delta)
             
-            print(f'   > {delta = } {prefix = } {dst_iv = }')
+            #print(f'   > {delta = } {prefix = } {dst_iv = }')
             yield dst_iv
 
             lo = prefix.hi
@@ -152,8 +152,6 @@ def parse_sections(sections: list[list[str]]):
     return initial_seeds, maps
     
 def solve2(sections: list[list[str]]) -> int:
-    from pprint import pprint
-    
     initial_seeds, maps = parse_sections(sections)
 
 
@@ -161,27 +159,41 @@ def solve2(sections: list[list[str]]) -> int:
     s = chunked(s, 2)
     s = map(tuple, s)
     #s = observe(print, s)
-    s = map(star(lambda lo, n: (lo, lo + n)), s) # half-open intervals
+    s = map(star(lambda lo, n: Interval(lo, lo + n)), s) # half-open intervals
     seed_ranges = set(s)
 
     print('> initial_seeds ', pp.pformat(initial_seeds))
     print('> seed ranges ', pp.pformat(seed_ranges))
-    print('> maps ', pp.pformat(maps))
+    #print('> maps ', pp.pformat(maps))
+ 
+    def expand(m: Map, intervals: list[Interval]) -> list[Interval]:
+        print(f'> expand: m = {pp.pformat(m)}') 
+        print(f'> expand: {intervals = }')
+        s = iter(intervals)
+        s = map(m.map_interval, s)
+        s = itertools.chain.from_iterable(s)
+        newintervals = list(s)
+        
+        print(f'> expand: {newintervals = }')
+        return newintervals
+        
+    def follow(src, dst, intervals: list[Interval]) -> list[Interval]:
+        print(f'> follow: {src = } {dst = } {intervals = }')
+        m = maps[src]
+        while m.dest() != dst:
+            intervals = expand(m, intervals)
+            m = maps[m.dest()]
+        intervals = expand(m, intervals)
+        return intervals
+
+    test_intervals = [
+        Interval(79, 79 + 14),
+        Interval(55, 55 + 13),
+    ]
     
-    seedmap = maps['seed']
-    print('seedmap', pp.pformat(seedmap))
-    for s in (79, 14, 55, 13):
-        print(f'> {s = } {seedmap.map(s) = }')
-    for s in (
-        Interval(79, 79+14), 
-        Interval(55, 55+13),
-        Interval(0, 10),
-        Interval(10, 40),
-        Interval(40, 50),
-        Interval(40, 60),
-        Interval(40, 99)
-    ):
-        print(f'> {s = } {list(seedmap.map_interval(s)) = }')
+    
+    output_intervals = follow('seed', 'location', seed_ranges)
+    print(min(output_intervals, key=lambda iv: iv.lo))
 
     return -1
 
