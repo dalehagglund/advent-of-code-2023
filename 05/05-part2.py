@@ -29,6 +29,9 @@ class Interval:
     def __post_init__(self):
         if not(self.lo <= self.hi):
             raise ValueError("Interval: 'lo' larger than 'hi'")
+            
+    def shift(self, shift):
+        return Interval(self.lo + shift, self.hi + shift)
 
 @dataclass
 class Map:
@@ -39,6 +42,43 @@ class Map:
         
     def source(self): return self._source
     def dest(self): return self._dest
+    
+    def map(self, n: int) -> int:
+        for iv in self._indices:
+            if iv.lo <= n < iv.hi:
+                return n + self._shift[iv]
+        assert "didn't expect to exit the loop"
+    
+    def map_interval(self, interval: Interval) -> \
+            ty.Iterator[Interval]:
+        lo, hi = interval.lo, interval.hi
+        
+        indices = iter(self._indices)
+        src_iv = next(indices)
+
+        print(f'> map_intv: {(lo, hi) = }')
+        while lo < hi:
+            print(f'   > {(lo, hi) = } {src_iv = }')
+            if lo >= src_iv.hi: 
+                print('   > skip')
+                src_iv = next(indices)
+                continue
+            assert lo >= src_iv.lo
+
+            prefix = Interval( max(lo, src_iv.lo), min(hi, src_iv.hi) )
+            assert prefix.hi - prefix.lo > 0
+            assert prefix.lo == lo
+            assert prefix.hi <= hi
+            assert src_iv.lo <= prefix.lo < src_iv.hi
+            assert src_iv.lo <= prefix.hi <= src_iv.hi
+            
+            delta = self._shift[src_iv]
+            dst_iv = prefix.shift(delta)
+            
+            print(f'   > {delta = } {prefix = } {dst_iv = }')
+            yield dst_iv
+
+            lo = prefix.hi
 
     @classmethod
     def from_section(cls, lines) -> ty.Self:
@@ -128,6 +168,21 @@ def solve2(sections: list[list[str]]) -> int:
     print('> seed ranges ', pp.pformat(seed_ranges))
     print('> maps ', pp.pformat(maps))
     
+    seedmap = maps['seed']
+    print('seedmap', pp.pformat(seedmap))
+    for s in (79, 14, 55, 13):
+        print(f'> {s = } {seedmap.map(s) = }')
+    for s in (
+        Interval(79, 79+14), 
+        Interval(55, 55+13),
+        Interval(0, 10),
+        Interval(10, 40),
+        Interval(40, 50),
+        Interval(40, 60),
+        Interval(40, 99)
+    ):
+        print(f'> {s = } {list(seedmap.map_interval(s)) = }')
+
     return -1
 
 def part2(fname: str):
