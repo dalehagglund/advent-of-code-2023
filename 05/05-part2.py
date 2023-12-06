@@ -63,7 +63,7 @@ class Map:
         s = map(str.split, s)
         s = map(partial(map, int), s)
         s = map(tuple, s)
-        s = observe(partial(print, "#1"), s)
+        #s = observe(partial(print, "#1"), s)
         s = observe(star(assert_valid_triple), s)         
         s = sorted(s, key=partial(nth, 1))
         
@@ -93,10 +93,10 @@ class Map:
             
         add_index(Interval(indices[-1].hi, maxint), 0)
         
-        print("#10: source", pp.pformat(source))
-        print("#10: dest  ", pp.pformat(dest))
-        print("#10: shift ", pp.pformat(shift))
-        print("#10: indices", pp.pformat(indices))
+        #print("#10: source", pp.pformat(source))
+        #print("#10: dest  ", pp.pformat(dest))
+        #print("#10: shift ", pp.pformat(shift))
+        #print("#10: indices", pp.pformat(indices))
                 
         return cls(source, dest, shift, indices)        
     
@@ -120,7 +120,7 @@ def solve2(sections: list[list[str]]) -> int:
     s = iter(initial_seeds)
     s = chunked(s, 2)
     s = map(tuple, s)
-    s = observe(print, s)
+    #s = observe(print, s)
     s = map(star(lambda lo, n: (lo, lo + n)), s) # half-open intervals
     seed_ranges = set(s)
 
