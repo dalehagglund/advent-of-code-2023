@@ -17,10 +17,41 @@ from functools import (
 
 from tools import *
 
+def read_input_tuples(sec: list[str]) -> list[tuple[int, int]]:
+    times = sec[0]
+    distances = sec[1]
+    
+    return list(
+        zip(
+            map(int, times.split()[1:]),
+            map(int, distances.split()[1:])
+        )
+    )
+
+def dist(h: int, M: int) -> int:
+    assert h <= M
+    return (M - h)*h
+
+def solve1(sec: list[str]) -> int:
+    games = read_input_tuples(sec)
+    product = 1
+    
+    for g in games:
+        M, record = g
+        print(f'> {M = } {record = }')
+        for h in range(0, M+1):
+            print(f'   > {h = } {dist(h, M) = }')
+            if dist(h, M) > record:
+                wins = (M - h) - h + 1
+                print(f'   > {wins = }')
+                product *= wins
+                break
+    return product
+
 def part1(fname: str):
     with open(fname) as f:
         sections = read_sections(f)
-    print(f'*** part 1 ***')
+    print(f'*** part 1 ***', solve1(sections[0]))
     
 def part2(fname: str):
     with open(fname) as f:
