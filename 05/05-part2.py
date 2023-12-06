@@ -56,11 +56,8 @@ class Map:
         indices = iter(self._indices)
         src_iv = next(indices)
 
-        #print(f'> map_intv: {(lo, hi) = }')
         while lo < hi:
-            #print(f'   > {(lo, hi) = } {src_iv = }')
             if lo >= src_iv.hi: 
-                #print('   > skip')
                 src_iv = next(indices)
                 continue
             assert lo >= src_iv.lo
@@ -75,7 +72,6 @@ class Map:
             delta = self._shift[src_iv]
             dst_iv = prefix.shift(delta)
             
-            #print(f'   > {delta = } {prefix = } {dst_iv = }')
             yield dst_iv
 
             lo = prefix.hi
@@ -103,7 +99,6 @@ class Map:
         s = map(str.split, s)
         s = map(partial(map, int), s)
         s = map(tuple, s)
-        #s = observe(partial(print, "#1"), s)
         s = observe(star(assert_valid_triple), s)         
         s = sorted(s, key=partial(nth, 1))
         
@@ -132,11 +127,6 @@ class Map:
             add_index(cur, delta)
             
         add_index(Interval(indices[-1].hi, maxint), 0)
-        
-        #print("#10: source", pp.pformat(source))
-        #print("#10: dest  ", pp.pformat(dest))
-        #print("#10: shift ", pp.pformat(shift))
-        #print("#10: indices", pp.pformat(indices))
                 
         return cls(source, dest, shift, indices)        
     
@@ -158,27 +148,16 @@ def solve2(sections: list[list[str]]) -> int:
     s = iter(initial_seeds)
     s = chunked(s, 2)
     s = map(tuple, s)
-    #s = observe(print, s)
     s = map(star(lambda lo, n: Interval(lo, lo + n)), s) # half-open intervals
     seed_ranges = set(s)
-
-    print('> initial_seeds ', pp.pformat(initial_seeds))
-    print('> seed ranges ', pp.pformat(seed_ranges))
-    #print('> maps ', pp.pformat(maps))
  
     def expand(m: Map, intervals: list[Interval]) -> list[Interval]:
-        print(f'> expand: m = {pp.pformat(m)}') 
-        print(f'> expand: {intervals = }')
         s = iter(intervals)
         s = map(m.map_interval, s)
         s = itertools.chain.from_iterable(s)
-        newintervals = list(s)
-        
-        print(f'> expand: {newintervals = }')
-        return newintervals
+        return list(s)
         
     def follow(src, dst, intervals: list[Interval]) -> list[Interval]:
-        print(f'> follow: {src = } {dst = } {intervals = }')
         m = maps[src]
         while m.dest() != dst:
             intervals = expand(m, intervals)
@@ -186,16 +165,8 @@ def solve2(sections: list[list[str]]) -> int:
         intervals = expand(m, intervals)
         return intervals
 
-    test_intervals = [
-        Interval(79, 79 + 14),
-        Interval(55, 55 + 13),
-    ]
-    
-    
     output_intervals = follow('seed', 'location', seed_ranges)
-    print(min(output_intervals, key=lambda iv: iv.lo))
-
-    return -1
+    return min(map(lambda iv: iv.lo, output_intervals))
 
 def part2(fname: str):
     with open(fname) as f:
