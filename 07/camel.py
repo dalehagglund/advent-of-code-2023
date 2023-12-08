@@ -37,11 +37,45 @@ class Hand:
         (5,): 6,
     }
 
-    def __init__(self, cards: str):
+    def __init__(self, cards: str, wild=False):
         assert len(cards) == 5
         self._cards: str = cards
         self._counts: Counter[str] = Counter(cards)
-        self._shape = tuple(sorted(map(lambda s: self._counts[s], set(cards))))        
+        self._shape = tuple(sorted(map(lambda s: self._counts[s], set(cards))))     
+        if wild:
+            self._upgrade_hand(self._counts)
+            
+    def _upgrade_hand(self, counts):
+        jcount = counts["J"]
+        if jcount == 0:
+            return
+        
+        if self._shape == (5,): 
+            pass
+        elif self._shape == (1, 4) and jcount == 1:
+            self._shape = (5,)
+        elif self._shape == (1, 4) and jcount == 4:
+            pass
+        elif self._shape == (2, 3) and jcount in (2, 3):
+            self._shape = (5,)
+        elif self._shape == (1, 1, 3) and jcount == 1:
+            self._shape = (1, 4)
+        elif self._shape == (1, 1, 3) and jcount == 3:
+            pass
+        elif self._shape == (1, 2, 2) and jcount == 1:
+            self._shape = (2, 3)
+        elif self._shape == (1, 2, 2) and jcount == 2:
+            self._shape = (1, 4)
+        elif self._shape == (1, 1, 1, 2) and jcount == 1:
+            self._shape = (1, 1, 3)
+        elif self._shape == (1, 1, 1, 2) and jcount == 2:
+            pass
+        elif self._shape == (1, 1, 1, 1, 1) and jcount == 1:
+            self._shape = (1, 1, 1, 2)
+        else:
+            raise AssertionError(
+                f'no upgrade applies: {self._shape = } {jcount = }'
+            )
 
     def is_five_of_a_kind(self):
         return self._shape == (5,)
