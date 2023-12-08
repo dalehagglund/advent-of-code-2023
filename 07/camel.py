@@ -52,24 +52,18 @@ class Hand:
         
         if self._shape == (5,): 
             pass
-        elif self._shape == (1, 4) and jcount == 1:
+        elif self._shape == (1, 4) and jcount in (1, 4):
             self._shape = (5,)
-        elif self._shape == (1, 4) and jcount == 4:
-            pass
         elif self._shape == (2, 3) and jcount in (2, 3):
             self._shape = (5,)
-        elif self._shape == (1, 1, 3) and jcount == 1:
+        elif self._shape == (1, 1, 3) and jcount in (1, 3):
             self._shape = (1, 4)
-        elif self._shape == (1, 1, 3) and jcount == 3:
-            pass
         elif self._shape == (1, 2, 2) and jcount == 1:
             self._shape = (2, 3)
         elif self._shape == (1, 2, 2) and jcount == 2:
             self._shape = (1, 4)
-        elif self._shape == (1, 1, 1, 2) and jcount == 1:
+        elif self._shape == (1, 1, 1, 2) and jcount in (1, 2):
             self._shape = (1, 1, 3)
-        elif self._shape == (1, 1, 1, 2) and jcount == 2:
-            pass
         elif self._shape == (1, 1, 1, 1, 1) and jcount == 1:
             self._shape = (1, 1, 1, 2)
         else:

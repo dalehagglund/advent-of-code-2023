@@ -25,19 +25,19 @@ def test_upgrade_five_of_a_kind(cards):
     "cards,test", [
         # from 4 of a kind
         ("2222J", Hand.is_five_of_a_kind), 
-        ("JJJJ3", Hand.is_four_of_a_kind),
+        ("JJJJ3", Hand.is_five_of_a_kind),
         # from full house
         ("222JJ", Hand.is_five_of_a_kind),
         ("JJJ22", Hand.is_five_of_a_kind),
         # from 3 of a kind
         ("222JK", Hand.is_four_of_a_kind),
-        ("JJJ23", Hand.is_three_of_a_kind),
+        ("JJJ23", Hand.is_four_of_a_kind),
         # from 2 pair
         ("2233J", Hand.is_full_house),
         ("22JJ5", Hand.is_four_of_a_kind),
         # from 1 pair
         ("22JQK", Hand.is_three_of_a_kind),
-        ("JJ234", Hand.is_one_pair),
+        ("JJ234", Hand.is_three_of_a_kind),
         # from high card
         ("J2345", Hand.is_one_pair),
     ]
