@@ -14,3 +14,15 @@ class Hand:
         assert len(cards) == 5
         self._cards: str = cards
         self._counts: Counter[str] = Counter(cards)
+        self._labels: set[str] = set(cards)
+
+    def is_five_of_a_kind(self):
+        if len(self._counts) > 1: return False
+        label = next(iter(self._counts.keys()))
+        assert self._counts[label] == 5
+        return True
+        
+    def is_four_of_a_kind(self):
+        if len(self._labels) > 2: return False
+        counts = sorted(map(lambda s: self._counts[s], self._labels))
+        return counts == [1, 4]
