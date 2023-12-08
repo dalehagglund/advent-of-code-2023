@@ -15,6 +15,7 @@ def cmp_card(c1: str, c2: str) -> int:
     if delta > 0: return +1
     return 0
 
+@total_ordering
 @dataclass
 class Hand:
     _cards: str
