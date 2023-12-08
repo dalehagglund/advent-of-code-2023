@@ -14,12 +14,6 @@ def card_pos(c: str) -> int:
     assert len(c) == 1
     return _STANDARD_CARD_ORDER[c]
 
-def cmp_card(c1: str, c2: str) -> int:
-    delta = card_pos(c1) - card_pos(c2)
-    if delta < 0: return -1
-    if delta > 0: return +1
-    return 0
-
 @total_ordering
 @dataclass
 class Hand:

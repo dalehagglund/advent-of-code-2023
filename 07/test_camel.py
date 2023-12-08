@@ -1,16 +1,6 @@
 from camel import *
 import pytest
 
-@pytest.mark.parametrize(
-    "c1,c2,expected", [
-        ("2", "2", 0),
-        ("2", "3", -1),
-        ("3", "2", +1),  
-    ]
-)
-def test_card_ordering(c1, c2, expected):
-    assert cmp_card(c1, c2) == expected
-
 def test_hand_counts():
     h = Hand("22333")
     assert h._counts["2"] == 2
