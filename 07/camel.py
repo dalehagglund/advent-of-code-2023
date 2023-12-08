@@ -1,6 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass
-from functools import total_ordering
+from functools import total_ordering, partial
 
 _STANDARD_CARD_ORDER = {
     card: pos for pos, card in enumerate("23456789TJQKA")
@@ -10,9 +10,9 @@ _JOKERS_WILD_CARD_ORDER = {
     card: pos for pos, card in enumerate("J23456789TQKA")
 }
 
-def card_pos(c: str) -> int:
+def _card_pos(ordering, c: str) -> int:
     assert len(c) == 1
-    return _STANDARD_CARD_ORDER[c]
+    return ordering[c]
 
 @total_ordering
 @dataclass
@@ -35,7 +35,11 @@ class Hand:
         assert len(cards) == 5
         self._cards: str = cards
         self._counts: Counter[str] = Counter(cards)
-        self._shape = tuple(sorted(map(lambda s: self._counts[s], set(cards))))     
+        self._shape = tuple(sorted(map(lambda s: self._counts[s], set(cards))))
+        self._ordering = partial(
+            _card_pos,
+            _JOKERS_WILD_CARD_ORDER if wild else _STANDARD_CARD_ORDER
+        )
         if wild:
             self._upgrade_hand(self._counts)
             
@@ -96,4 +100,8 @@ class Hand:
             return False
         if self._shape != other._shape:
             return self._SHAPE_RANK[self._shape] < self._SHAPE_RANK[other._shape]        
-        return tuple(map(card_pos, self._cards)) < tuple(map(card_pos, other._cards))
+        return (
+            tuple(map(self._ordering, self._cards))
+            < 
+            tuple(map(self._ordering, other._cards))
+        )
