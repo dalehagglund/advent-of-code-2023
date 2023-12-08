@@ -12,15 +12,31 @@ from itertools import (
 )
 from functools import (
     partial,
-    reduce
+    reduce,
 )
 
 from tools import *
+from camel import Hand
+
+def read_bids(sec: list[str]) -> list[tuple[Hand, int]]:
+    s = iter(sec)
+    s = map(str.split, s)
+    s = map(partial(convert_fields, (Hand, int)), s)
+    return list(s)
     
+def solve1(sections) -> int:
+    ordered_hands = sorted(read_bids(sections[0]), key=partial(nth, 0))
+    return sum(
+        rank * bid
+        for rank, (card, bid) 
+        in zip(itertools.count(1), ordered_hands)
+    )
+
 def part1(fname: str):
     with open(fname) as f:
         sections = read_sections(f)
-    print(f'*** part 1 ***')
+    print(f'*** part 1 ***', solve1(sections))
+    
     
 def part2(fname: str):
     with open(fname) as f:

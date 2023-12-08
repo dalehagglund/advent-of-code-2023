@@ -70,6 +70,5 @@ class Hand:
         if self is other:
             return False
         if self._shape != other._shape:
-            print("> #2: ", self._shape, other._shape) 
             return self._SHAPE_RANK[self._shape] < self._SHAPE_RANK[other._shape]        
         return tuple(map(card_pos, self._cards)) < tuple(map(card_pos, other._cards))
