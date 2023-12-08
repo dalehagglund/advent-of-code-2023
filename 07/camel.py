@@ -1,4 +1,6 @@
 from collections import Counter
+from dataclasses import dataclass
+from functools import total_ordering
 
 CARDS = "23456789TJQKA"
 _CARD_ORDER = { card: pos for pos, card in enumerate(CARDS) }
@@ -8,8 +10,13 @@ def cmp_card(c1: str, c2: str) -> int:
     if delta < 0: return -1
     if delta > 0: return +1
     return 0
-    
+
+@dataclass
 class Hand:
+    _cards: str
+    _counts: Counter[str]
+    _labels = set[str]
+    
     def __init__(self, cards: str):
         assert len(cards) == 5
         self._cards: str = cards
@@ -43,3 +50,8 @@ class Hand:
     def is_high_card(self):
         counts = sorted(map(lambda s: self._counts[s], self._labels))
         return counts == [1, 1, 1, 1, 1]
+        
+    def __eq__(self, other) -> bool:
+        if self is other: return True
+        if self._counts != other._counts: return False
+        return self._cards == other._cards
