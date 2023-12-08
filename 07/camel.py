@@ -17,18 +17,14 @@ class Hand:
         self._labels: set[str] = set(cards)
 
     def is_five_of_a_kind(self):
-        if len(self._counts) > 1: return False
-        label = next(iter(self._counts.keys()))
-        assert self._counts[label] == 5
-        return True
-        
+        counts = sorted(map(lambda s: self._counts[s], self._labels))
+        return counts == [5]
+       
     def is_four_of_a_kind(self):
-        if len(self._labels) > 2: return False
         counts = sorted(map(lambda s: self._counts[s], self._labels))
         return counts == [1, 4]
     
     def is_full_house(self):
-        if len(self._labels) > 2: return False
         counts = sorted(map(lambda s: self._counts[s], self._labels))
         return counts == [2, 3]
         
@@ -47,4 +43,3 @@ class Hand:
     def is_high_card(self):
         counts = sorted(map(lambda s: self._counts[s], self._labels))
         return counts == [1, 1, 1, 1, 1]
-
