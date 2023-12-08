@@ -43,3 +43,8 @@ class Hand:
     def is_one_pair(self):
         counts = sorted(map(lambda s: self._counts[s], self._labels))
         return counts == [1, 1, 1, 2]
+        
+    def is_high_card(self):
+        counts = sorted(map(lambda s: self._counts[s], self._labels))
+        return counts == [1, 1, 1, 1, 1]
+

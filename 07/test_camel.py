@@ -92,3 +92,18 @@ def test_two_pair(cards, expected):
 def test_one_pair(cards, expected):
     hand = Hand(cards)
     assert hand.is_one_pair() == expected
+    
+@pytest.mark.parametrize(
+    "cards, expected", [
+        ("AAAAA", False),
+        ("22224", False),
+        ("22233", False),
+        ("77889", False),
+        ("22345", False),
+        ("23456", True),
+        ("AKQJT", True),
+    ]
+)
+def test_one_pair(cards, expected):
+    hand = Hand(cards)
+    assert hand.is_high_card() == expected
