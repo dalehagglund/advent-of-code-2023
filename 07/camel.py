@@ -2,12 +2,17 @@ from collections import Counter
 from dataclasses import dataclass
 from functools import total_ordering
 
-CARDS = "23456789TJQKA"
-_CARD_ORDER = { card: pos for pos, card in enumerate(CARDS) }
+_STANDARD_CARD_ORDER = {
+    card: pos for pos, card in enumerate("23456789TJQKA")
+}
+
+_JOKERS_WILD_CARD_ORDER = {
+    card: pos for pos, card in enumerate("J23456789TQKA")
+}
 
 def card_pos(c: str) -> int:
     assert len(c) == 1
-    return _CARD_ORDER[c]
+    return _STANDARD_CARD_ORDER[c]
 
 def cmp_card(c1: str, c2: str) -> int:
     delta = card_pos(c1) - card_pos(c2)
@@ -20,7 +25,6 @@ def cmp_card(c1: str, c2: str) -> int:
 class Hand:
     _cards: str
     _counts: Counter[str]
-    _labels: set[str]
     _shape: tuple[int, int, int, int, int]
     
     _SHAPE_RANK = {
@@ -37,8 +41,7 @@ class Hand:
         assert len(cards) == 5
         self._cards: str = cards
         self._counts: Counter[str] = Counter(cards)
-        self._labels: set[str] = set(cards)
-        self._shape = tuple(sorted(map(lambda s: self._counts[s], self._labels)))
+        self._shape = tuple(sorted(map(lambda s: self._counts[s], set(cards))))        
 
     def is_five_of_a_kind(self):
         return self._shape == (5,)

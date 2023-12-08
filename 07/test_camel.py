@@ -1,8 +1,6 @@
 from camel import *
 import pytest
 
-ordering_tests = [
-]
 @pytest.mark.parametrize(
     "c1,c2,expected", [
         ("2", "2", 0),
