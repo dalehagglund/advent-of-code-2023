@@ -48,26 +48,23 @@ class Hand:
         if jcount == 0:
             return
         
-        if self._shape == (5,): 
-            pass
-        elif self._shape == (1, 4) and jcount in (1, 4):
-            self._shape = (5,)
-        elif self._shape == (2, 3) and jcount in (2, 3):
-            self._shape = (5,)
-        elif self._shape == (1, 1, 3) and jcount in (1, 3):
-            self._shape = (1, 4)
-        elif self._shape == (1, 2, 2) and jcount == 1:
-            self._shape = (2, 3)
-        elif self._shape == (1, 2, 2) and jcount == 2:
-            self._shape = (1, 4)
-        elif self._shape == (1, 1, 1, 2) and jcount in (1, 2):
-            self._shape = (1, 1, 3)
-        elif self._shape == (1, 1, 1, 1, 1) and jcount == 1:
-            self._shape = (1, 1, 1, 2)
-        else:
-            raise AssertionError(
-                f'no upgrade applies: {self._shape = } {jcount = }'
-            )
+        for shape, counts, newshape in [
+            [ (5,),            range(1,6),   (5,) ],
+            [ (1, 4),          {1, 4},       (5,) ],
+            [ (2, 3),          {2, 3},       (5,) ],
+            [ (1, 1, 3),       {1, 3},       (1, 4) ],
+            [ (1, 2, 2),       {1},          (2, 3) ],
+            [ (1, 2, 2),       {2},          (1, 4) ],
+            [ (1, 1, 1, 2),    {1, 2},       (1, 1, 3) ],
+            [ (1, 1, 1, 1, 1), {1},          (1, 1, 1, 2) ],
+        ]:
+            if self._shape == shape and jcount in counts:
+                self._shape = newshape
+                return
+
+        raise AssertionError(
+            f'no upgrade applies: {self._shape = } {jcount = }'
+        )
 
     def is_five_of_a_kind(self):
         return self._shape == (5,)
