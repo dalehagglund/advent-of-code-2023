@@ -26,3 +26,8 @@ class Hand:
         if len(self._labels) > 2: return False
         counts = sorted(map(lambda s: self._counts[s], self._labels))
         return counts == [1, 4]
+    
+    def is_full_house(self):
+        if len(self._labels) > 2: return False
+        counts = sorted(map(lambda s: self._counts[s], self._labels))
+        return counts == [2, 3]

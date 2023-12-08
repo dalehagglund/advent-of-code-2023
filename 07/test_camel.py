@@ -40,4 +40,16 @@ def test_five_of_a_kind(cards, expected):
 def test_four_of_a_kind(cards, expected):
     hand = Hand(cards)
     assert hand.is_four_of_a_kind() == expected
-    
+
+
+@pytest.mark.parametrize(
+    "cards, expected", [
+        ("AAAAA", False),
+        ("22334", False),
+        ("777AA", True),
+        ("77AA7", True),
+    ]
+)
+def test_full_house(cards, expected):
+    hand = Hand(cards)
+    assert hand.is_full_house() == expected
