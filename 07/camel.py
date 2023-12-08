@@ -31,3 +31,8 @@ class Hand:
         if len(self._labels) > 2: return False
         counts = sorted(map(lambda s: self._counts[s], self._labels))
         return counts == [2, 3]
+        
+    def is_three_of_a_kind(self):
+        counts = sorted(map(lambda s: self._counts[s], self._labels))
+        return counts == [1, 1, 3]
+
