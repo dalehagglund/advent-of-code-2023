@@ -78,3 +78,17 @@ def test_three_of_a_kind(cards, expected):
 def test_two_pair(cards, expected):
     hand = Hand(cards)
     assert hand.is_two_pair() == expected
+
+@pytest.mark.parametrize(
+    "cards, expected", [
+        ("AAAAA", False),
+        ("22224", False),
+        ("22233", False),
+        ("77889", False),
+        ("22345", True),
+        ("23452", True),
+    ]
+)
+def test_one_pair(cards, expected):
+    hand = Hand(cards)
+    assert hand.is_one_pair() == expected
