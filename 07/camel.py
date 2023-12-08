@@ -15,43 +15,42 @@ def cmp_card(c1: str, c2: str) -> int:
 class Hand:
     _cards: str
     _counts: Counter[str]
-    _labels = set[str]
-    
+    _labels: set[str]
+    _shape: tuple[int, int, int, int, int]
+
     def __init__(self, cards: str):
         assert len(cards) == 5
         self._cards: str = cards
         self._counts: Counter[str] = Counter(cards)
         self._labels: set[str] = set(cards)
+        self._shape = tuple(sorted(map(lambda s: self._counts[s], self._labels)))
 
     def is_five_of_a_kind(self):
-        counts = sorted(map(lambda s: self._counts[s], self._labels))
-        return counts == [5]
+        return self._shape == (5,)
        
     def is_four_of_a_kind(self):
-        counts = sorted(map(lambda s: self._counts[s], self._labels))
-        return counts == [1, 4]
+        return self._shape == (1, 4)
     
     def is_full_house(self):
-        counts = sorted(map(lambda s: self._counts[s], self._labels))
-        return counts == [2, 3]
+        return self._shape == (2, 3)
         
     def is_three_of_a_kind(self):
-        counts = sorted(map(lambda s: self._counts[s], self._labels))
-        return counts == [1, 1, 3]
+        return self._shape == (1, 1, 3)
         
     def is_two_pair(self):
-        counts = sorted(map(lambda s: self._counts[s], self._labels))
-        return counts == [1, 2, 2]
+        return self._shape == (1, 2, 2)
 
     def is_one_pair(self):
-        counts = sorted(map(lambda s: self._counts[s], self._labels))
-        return counts == [1, 1, 1, 2]
+        return self._shape == (1, 1, 1, 2)
         
     def is_high_card(self):
-        counts = sorted(map(lambda s: self._counts[s], self._labels))
-        return counts == [1, 1, 1, 1, 1]
+        return self._shape == (1, 1, 1, 1, 1)
         
     def __eq__(self, other) -> bool:
         if self is other: return True
         if self._counts != other._counts: return False
         return self._cards == other._cards
+        
+    def __lt__(self, other) -> bool:
+        if self is other: return False
+        
