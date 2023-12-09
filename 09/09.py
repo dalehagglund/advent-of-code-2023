@@ -19,8 +19,22 @@ from pprint import pprint
 
 from tools import *
 
+def differences(vec: list[int]) -> list[int]:
+    return [ n2 - n1 for n1, n2 in pairwise(vec) ]
+
+def extrapolate(vec: list[int]) -> int:
+    if all(n == 0 for n in vec): return 0
+    return vec[-1] + extrapolate(differences(vec))
+
 def solve1(sections: list[list[str]]) -> int:
-    return -1
+    s = iter(sections[0])
+    s = map(str.split, s)
+    s = map(partial(map, int), s)
+    s = map(list, s)
+    s = observe(partial(print, "#1 "), s)
+    s = map(extrapolate, s)
+    s = observe(partial(print, "#2 "), s)
+    return sum(s)
 
 def solve2(sections: list[list[str]]) -> int:
     return -1
