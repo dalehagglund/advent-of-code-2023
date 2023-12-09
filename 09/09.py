@@ -30,26 +30,18 @@ def extrapolate_backward(vec: list[int]) -> int:
     if all(n == 0 for n in vec): return 0
     return vec[0] - extrapolate_backward(differences(vec))
 
+def read_vectors(sections) -> list[list[int]]:
+    s = iter(sections[0])
+    s = map(str.split, s)
+    s = map(partial(map, int), s)
+    s = map(list, s)
+    return list(s)
 
 def solve1(sections: list[list[str]]) -> int:
-    s = iter(sections[0])
-    s = map(str.split, s)
-    s = map(partial(map, int), s)
-    s = map(list, s)
-    s = observe(partial(print, "#1 "), s)
-    s = map(extrapolate_forward, s)
-    s = observe(partial(print, "#2 "), s)
-    return sum(s)
+    return sum(map(extrapolate_forward, read_vectors(sections)))
 
 def solve2(sections: list[list[str]]) -> int:
-    s = iter(sections[0])
-    s = map(str.split, s)
-    s = map(partial(map, int), s)
-    s = map(list, s)
-    s = observe(partial(print, "#1 "), s)
-    s = map(extrapolate_backward, s)
-    s = observe(partial(print, "#2 "), s)
-    return sum(s)
+    return sum(map(extrapolate_backward, read_vectors(sections)))
     
 def part1(fname: str):
     with open(fname) as f:
