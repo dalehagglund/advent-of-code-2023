@@ -15,6 +15,7 @@ class Dir:
 @dataclass
 class Node:
     _label: Label
+    _name: str
     _adjacent: set[Label] = field(default_factory=set)
 
 _connections = {
@@ -40,6 +41,10 @@ class Grid:
         return self._start
     def neighbours(self, label):
         return iter(self._graph[label]._adjacent)
+    def labels(self):
+        return iter(self._graph.keys())
+    def at(self, label):
+        return self._graph[label]._name
 
     @classmethod
     def from_map(cls, lines) -> ty.Self:
@@ -61,7 +66,7 @@ class Grid:
         def can_connect(here, there) -> bool:
             if at(there) == ".": return
         graph = {
-            (r, c): Node((r, c))
+            (r, c): Node((r, c), lines[r][c])
             for r, c
             in product(nrow, ncol)
         }
