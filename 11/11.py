@@ -23,15 +23,8 @@ from spacetime import *
 def solve1(sections: list[list[str]], shift) -> int:
     space = Universe.from_lines(sections[0])
     space.expand(scale=shift)
-    pprint(space)
 
     galaxies = space.galaxy_positions()
-    for i, point in enumerate(sorted(galaxies)):
-        print(f'   {i:2d}: {point}')
-
-    #for i, pos in enumerate(galaxies):
-        #print(f'   {i:2d} {Point(0, 4).manhattan_dist(pos) = }')
-
     total = 0
     for pos1, pos2 in itertools.combinations(galaxies, 2):
         total += pos1.manhattan_dist(pos2)

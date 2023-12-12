@@ -7,12 +7,6 @@ from functools import partial
 from itertools import pairwise
 import re
 
-class Dir(tuple, Enum):
-    L = ( 0, -1)
-    R = ( 0, +1)
-    U = (-1,  0)
-    D = (+1,  0)
-
 class Point(ty.NamedTuple):
     row: int
     col: int
