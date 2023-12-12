@@ -25,62 +25,54 @@ class Point(ty.NamedTuple):
 
 @dataclass
 class Universe:
-    _grid: list[list[str]]
-    
-    def nrow(self):
-        return len(self._grid)
-    def ncol(self):
-        return len(self._grid[0])
+    _galaxies: list[Point]  # *original* positions
+    _rowshift: list[int]  # translate original rows to expanded rows
+    _colshift: list[int]  # ditto for columns
 
-    def at(self, place: Point) -> str:
-        r, c = place
-        return self._grid[r][c]
-    def row(self, r: int) -> str:
-        assert 0 <= r < self.nrow()
-        return self._grid[r]
-    def col(self, c: int) -> str:
-        assert 0 <= c < self.ncol()
-        return ''.join(
-            self._grid[r][c]
-            for r 
-            in range(self.nrow())
+    def expand(self, scale: int = 1):
+        if scale == 1:
+            return
+
+        occupied_rows = { r for r, _ in self._galaxies }
+        occupied_cols = { c for _, c in self._galaxies }
+        nrows = len(self._rowshift)
+        ncols = len(self._colshift)
+        
+        rowshift = list(
+            itertools.accumulate(
+                (scale - 1) if r not in occupied_rows else 0
+                for r in range(nrows)
+            )
         )
         
-    def is_valid(self, pos: Point) -> bool:
-        r, c = pos
-        if not (0 <= r < self.nrow()): return False
-        if not (0 <= c < self.ncol()): return False
-        return True
+        colshift = list(
+            itertools.accumulate(
+                (scale - 1) if c not in occupied_cols else 0
+                for c in range(ncols)
+            )
+        )
 
-    def neighbours(self, pos: Point) -> ty.Iterator[Point]:
-        for dir in (Dir.L, Dir.R, Dir.U, Dir.D):
-            newpos = pos + dir
-            if not self.is_valid(newpos):
-                continue
-            yield newpos
-        
-    def expand_empty_rows(self):
-        new_grid = []
-        for r in range(self.nrow()):
-            new_grid.append(self._grid[r])
-            if re.match(r"^\.*$", self.row(r)):
-                new_grid.append(self._grid[r])
-        self._grid = new_grid
+        self._rowshift, self._colshift = rowshift, colshift
 
-    def expand_empty_cols(self):
-        def transpose(grid: list[str]) -> list[str]:
-            nr, nc = len(grid), len(grid[0])
-            new = []
-            for c in range(nc):
-                new.append(''.join(grid[r][c] for r in range(nr)))
-            return new
-            
-        self._grid = transpose(self._grid)
-        self.expand_empty_rows()
-        self._grid = transpose(self._grid)
+    def galaxy_positions(self): 
+        return [
+            Point(r, c) + Point(self._rowshift[r] , self._colshift[c])
+            for r, c
+            in self._galaxies
+        ]
 
     @classmethod
     def from_lines(cls, input: list[str]) -> ty.Self:
         assert all(len(l1) == len(l2) for l1, l2 in pairwise(input))
-        return cls(_grid=input)
+        nrow, ncol = len(input), len(input[0])
+        galaxies = [
+            Point(r, c)
+            for r, c in 
+            product(nrow, ncol)
+            if input[r][c] == '#'
+        ]
+        
+        return cls(
+            _galaxies=galaxies, _rowshift=[0]*nrow, _colshift=[0]*ncol
+        )
         
