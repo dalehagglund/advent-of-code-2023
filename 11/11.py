@@ -18,10 +18,33 @@ import numpy as np
 from pprint import pprint
 
 from tools import *
+from spacetime import *
 
-def solve1(sections: list[list[str]]) -> int:
-    pass
+def find_galaxies(space: Universe) -> list[Point]:
+    return [
+        Point(r, c)
+        for (r, c) in product(space.nrow(), space.ncol())
+        if space.at((r,c)) == '#'
+    ]
     
+def solve1(sections: list[list[str]]) -> int:
+    space = Universe.from_lines(sections[0])
+    space.expand_empty_rows()
+    space.expand_empty_cols()
+    pprint(space)
+
+    galaxies = find_galaxies(space)
+    for i, point in enumerate(sorted(galaxies)):
+        print(f'   {i:2d}: {point}')
+
+    for i, pos in enumerate(galaxies):
+        print(f'   {i:2d} {Point(0, 4).manhattan_dist(pos) = }')
+
+    total = 0
+    for pos1, pos2 in itertools.combinations(galaxies, 2):
+        total += pos1.manhattan_dist(pos2)
+    return total
+        
 def solve2(sections: list[list[str]]) -> int:
     pass
     
