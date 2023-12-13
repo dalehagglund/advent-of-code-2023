@@ -64,6 +64,13 @@ def update(assignment, key, val):
     finally:
         del assignment[key]
 
+@contextlib.contextmanager
+def ignore(assignment, key, val):
+    try:
+        yield
+    finally:
+        pass
+
 def count_possible(s, assignment, runlen, lengths, pos) -> int:
     assert 0 <= pos <= len(s)    
 
@@ -106,9 +113,9 @@ def count_possible(s, assignment, runlen, lengths, pos) -> int:
         return count_possible(s, assignment, 1, lengths, pos + 1)
     if runlen == 0 and s[pos] == '?':
         # no run so far, try both alternatives
-        with update(assignment, pos, '.'):
+        with ignore(assignment, pos, '.'):
             possible_as_dot = count_possible(s, assignment, 0, lengths, pos + 1)        
-        with update(assignment, pos, '#'):
+        with ignore(assignment, pos, '#'):
             possible_as_broken = count_possible(s, assignment, 1, lengths, pos + 1)
         return possible_as_dot + possible_as_broken
         
@@ -122,7 +129,7 @@ def count_possible(s, assignment, runlen, lengths, pos) -> int:
         return count_possible(s, assignment, runlen + 1, lengths, pos + 1)
     if runlen < nextlen and s[pos] == '?':
         # must force ? to '#' to continue the run
-        with update(assignment, pos, '#'):
+        with ignore(assignment, pos, '#'):
             return count_possible(s, assignment, runlen + 1, lengths, pos + 1)
 
     ### run has hit the current expected length
@@ -135,7 +142,7 @@ def count_possible(s, assignment, runlen, lengths, pos) -> int:
         return 0
     if runlen == nextlen and s[pos] == '?':
         # have to end the run, so assign '.' to pos
-        with update(assignment, pos, '.'):
+        with ignore(assignment, pos, '.'):
             return count_possible(s, assignment, 0, lengths[1:], pos + 1)
     
     assert False, "Not expected to get here!"
