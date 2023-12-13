@@ -23,8 +23,61 @@ import operator
 
 from tools import *
 
+def find_reflections(grid, nrow, ncol) -> ty.Optional[int]:
+    # think of refpos as a cursor between two colummns,
+    # ie if refpos is, eg, 3, the reflection line runs
+    # vertically between column indices 2 and 3
+
+    def column(i):
+        return ''.join(grid[r][i] for r in range(nrow))
+    def row(i):
+        return grid[i]
+
+    def reflects_about(get, pos, width) -> bool:
+        s = range(width)
+        s = map(lambda i: get(pos - i - 1) == get(pos + i), s)
+        return all(s)
+
+    def candidates(get, maxpos, positions):        
+        s = iter(positions)
+        s = filter(lambda p: get(p-1) == get(p), s)
+        s = map(lambda p: (p, min(maxpos - p, p)), s)
+        s = observe(partial(print, 'candidates: possible'), s)
+        s = filter(star(partial(reflects_about, get)), s)
+        s = map(partial(nth, 0), s)
+        return set(s)
+ 
+    vset = candidates(column, ncol, range(1, ncol))
+    hset = candidates(row, nrow, range(1, nrow))    
+
+    print(f'refl: final: {vset = } {hset = }')
+    assert len(vset) <= 1
+    assert len(hset) <= 1
+    
+    def one_or_none(s):
+        assert len(s) <= 1  
+        return s.pop() if len(s) == 1 else None
+    return tuple(map(one_or_none, (vset, hset)))
+
+def score(grid: list[str]) -> int:
+    nrow, ncol = len(grid), len(grid[0])
+
+    pprint(grid)
+    print()
+    
+    vpos, hpos = find_reflections(grid, nrow, ncol)
+    assert (vpos is None) != (hpos is None)
+
+    if vpos is not None:
+        return vpos
+    else:
+        return 100 * hpos
+
 def solve1(sections: list[list[str]]) -> int:
-    return -1
+    s = iter(sections)
+    s = map(score, s)
+    total = sum(s)
+    return total
 
 def solve2(sections: list[list[str]], expand=5) -> int:
     return -1
@@ -56,6 +109,8 @@ def main(args):
             args[:0] = list(map(partial(operator.add, '-'), arg[1:]))
         elif arg in ('-1'): run1 = True
         elif arg in ('-2'): run2 = True
+        else:
+            usage(f'{arg}: unexpected option')
 
     if not (run1 or run2): run1 = run2 = True
 
