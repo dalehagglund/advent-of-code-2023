@@ -49,7 +49,7 @@ def solve1(sections: list[list[str]]) -> int:
         # for assignment in backtrack(s, {}, 0, groups, 0):
             # #print(f'   > {assignment = }') 
             # count += 1
-        count = count_possible(s, {}, 0, groups, 0)
+        count = count_possible(s, 0, groups, 0)
         print(f'>   {count = }')
         total += count
     
@@ -64,14 +64,7 @@ def update(assignment, key, val):
     finally:
         del assignment[key]
 
-@contextlib.contextmanager
-def ignore(assignment, key, val):
-    try:
-        yield
-    finally:
-        pass
-
-def count_possible(s, assignment, runlen, lengths, pos) -> int:
+def count_possible(s, runlen, lengths, pos) -> int:
     assert 0 <= pos <= len(s)    
 
     ### base case: we've hit the end of the pattern string
@@ -90,11 +83,9 @@ def count_possible(s, assignment, runlen, lengths, pos) -> int:
     ### we've run out of lengths
 
     if len(lengths) == 0 and s[pos] == '.':
-        return count_possible(s, assignment, 0, lengths, pos + 1)
+        return count_possible(s, 0, lengths, pos + 1)
     if len(lengths) == 0 and s[pos] == '?':
-        with update(assignment, pos, '.'):
-            return count_possible(s, assignment, 0, lengths, pos + 1)
-        return
+        return count_possible(s, 0, lengths, pos + 1)
     if len(lengths) == 0 and s[pos] == '#':
         return 0
 
@@ -107,16 +98,14 @@ def count_possible(s, assignment, runlen, lengths, pos) -> int:
 
     if runlen == 0 and s[pos] == '.':
         # no run to start, so advance
-        return count_possible(s, assignment, 0, lengths, pos + 1)
+        return count_possible(s, 0, lengths, pos + 1)
     if runlen == 0 and s[pos] == '#':
         # must force a run to begin
-        return count_possible(s, assignment, 1, lengths, pos + 1)
+        return count_possible(s, 1, lengths, pos + 1)
     if runlen == 0 and s[pos] == '?':
         # no run so far, try both alternatives
-        with ignore(assignment, pos, '.'):
-            possible_as_dot = count_possible(s, assignment, 0, lengths, pos + 1)        
-        with ignore(assignment, pos, '#'):
-            possible_as_broken = count_possible(s, assignment, 1, lengths, pos + 1)
+        possible_as_dot = count_possible(s, 0, lengths, pos + 1)        
+        possible_as_broken = count_possible(s, 1, lengths, pos + 1)
         return possible_as_dot + possible_as_broken
         
     ### run is short of curent expected length
@@ -126,24 +115,22 @@ def count_possible(s, assignment, runlen, lengths, pos) -> int:
         return 0
     if runlen < nextlen and s[pos] == '#':
         # required to extend run, continue search
-        return count_possible(s, assignment, runlen + 1, lengths, pos + 1)
+        return count_possible(s, runlen + 1, lengths, pos + 1)
     if runlen < nextlen and s[pos] == '?':
         # must force ? to '#' to continue the run
-        with ignore(assignment, pos, '#'):
-            return count_possible(s, assignment, runlen + 1, lengths, pos + 1)
+        return count_possible(s, runlen + 1, lengths, pos + 1)
 
     ### run has hit the current expected length
     
     if runlen == nextlen and s[pos] == '.':
         # consume expected length, keep looking
-        return count_possible(s, assignment, 0, lengths[1:], pos + 1)
+        return count_possible(s, 0, lengths[1:], pos + 1)
     if runlen == nextlen and s[pos] == '#':
         # run is now long, abandon this search
         return 0
     if runlen == nextlen and s[pos] == '?':
         # have to end the run, so assign '.' to pos
-        with ignore(assignment, pos, '.'):
-            return count_possible(s, assignment, 0, lengths[1:], pos + 1)
+        return count_possible(s, 0, lengths[1:], pos + 1)
     
     assert False, "Not expected to get here!"
 
@@ -245,7 +232,7 @@ def solve2(sections: list[list[str]], expand=5) -> int:
         # for assignment in backtrack(new_s, {}, 0, new_groups, 0):
             # #print(f'   > {assignment = }')
             # count += 1
-        count = count_possible(new_s, {}, 0, new_groups, 0)
+        count = count_possible(new_s, 0, new_groups, 0)
         
         elapsed_time = int(time.time() - start_time)
         t = time.time()
