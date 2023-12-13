@@ -25,16 +25,7 @@ from tools import *
 
 swap_char = dict(zip("#.", ".#"))
     
-def find_refl_lines(grid, nrow, ncol, smudge=None) -> ty.Optional[int]:
-    # think of refpos as a cursor between two colummns,
-    # ie if refpos is, eg, 3, the reflection line runs
-    # vertically between column indices 2 and 3
-
-    def apply_smudge(r, c):
-        if smudge is None: return grid[r][c]
-        if smudge != (r, c): return grid[r][c]
-        return swap_char[grid[r][c]]
-
+def find_refl_lines(grid, nrow, ncol, smudge=None) -> ty.Iterator[tuple[str, int]]:
     def column(i):
         return ''.join(
             apply_smudge(r, i) 
@@ -45,12 +36,14 @@ def find_refl_lines(grid, nrow, ncol, smudge=None) -> ty.Optional[int]:
             apply_smudge(i, c)
             for c in range(ncol)
         )
-
+    def apply_smudge(r, c):
+        if smudge is None: return grid[r][c]
+        if smudge != (r, c): return grid[r][c]
+        return swap_char[grid[r][c]]
     def reflects_about(get, pos, width) -> bool:
         s = range(width)
         s = map(lambda i: get(pos - i - 1) == get(pos + i), s)
         return all(s)
-
     def candidates(get, maxpos, positions):        
         s = iter(positions)
         s = filter(lambda p: get(p-1) == get(p), s)
@@ -86,28 +79,21 @@ def solve1(sections: list[list[str]]) -> int:
     s = map(star(score), s)
     return sum(s)
     
-def mapf(*funcs):
-    def _exec(*args):
-        return tuple(f(*args) for f in funcs)
-    return _exec
-
 def solve2(sections: list[list[str]], expand=5) -> int:
-    def apply_smudges(grid, nrow, ncol):
+    def try_smudges(grid, nrow, ncol):
         orig = set(find_refl_lines(grid, nrow, ncol))
         smudged = set()
         for r, c in product(nrow, ncol):
             smudged |= set(find_refl_lines(grid, nrow, ncol, smudge=(r, c)))
         new = smudged - orig
-        print(f'solve2: {orig = } {smudged = } {new = }')
         assert len(new) == 1
         return new.pop()
+
     s = iter(sections)
-    s = observe(pprint, s)
     s = map(lambda g: (g, len(g), len(g[0])), s)
-    s = map(star(apply_smudges), s)
+    s = map(star(try_smudges), s)
     s = map(star(score), s)
     return sum(s)
-    return -1
     
 def part1(fname: str):
     with open(fname) as f:
