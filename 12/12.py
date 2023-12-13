@@ -27,7 +27,7 @@ def parse_rows(lines: list[str], part2=False):
 
     for i, line in enumerate(lines):
         pattern, right = line.split()
-        groups = list(map(int, right.split(",")))
+        groups = tuple(map(int, right.split(",")))
         qpositions = [
             m.start()
             for m in
