@@ -13,6 +13,7 @@ from itertools import (
 from functools import (
     partial,
     reduce,
+    lru_cache,
 )
 import numpy as np
 from pprint import pprint
@@ -64,6 +65,7 @@ def update(assignment, key, val):
     finally:
         del assignment[key]
 
+@lru_cache
 def count_possible(s, runlen, lengths, pos) -> int:
     assert 0 <= pos <= len(s)    
 
