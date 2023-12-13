@@ -23,15 +23,28 @@ import operator
 
 from tools import *
 
-def find_reflections(grid, nrow, ncol) -> ty.Optional[int]:
+swap_char = dict(zip("#.", ".#"))
+    
+def find_refl_lines(grid, nrow, ncol, smudge=None) -> ty.Optional[int]:
     # think of refpos as a cursor between two colummns,
     # ie if refpos is, eg, 3, the reflection line runs
     # vertically between column indices 2 and 3
 
+    def apply_smudge(r, c):
+        if smudge is None: return grid[r][c]
+        if smudge != (r, c): return grid[r][c]
+        return swap_char[grid[r][c]]
+
     def column(i):
-        return ''.join(grid[r][i] for r in range(nrow))
+        return ''.join(
+            apply_smudge(r, i) 
+            for r in range(nrow)
+        )
     def row(i):
-        return grid[i]
+        return ''.join(
+            apply_smudge(i, c)
+            for c in range(ncol)
+        )
 
     def reflects_about(get, pos, width) -> bool:
         s = range(width)
@@ -42,7 +55,7 @@ def find_reflections(grid, nrow, ncol) -> ty.Optional[int]:
         s = iter(positions)
         s = filter(lambda p: get(p-1) == get(p), s)
         s = map(lambda p: (p, min(maxpos - p, p)), s)
-        s = observe(partial(print, 'candidates: possible'), s)
+        #s = observe(partial(print, 'candidates: possible'), s)
         s = filter(star(partial(reflects_about, get)), s)
         s = map(partial(nth, 0), s)
         return set(s)
@@ -50,36 +63,50 @@ def find_reflections(grid, nrow, ncol) -> ty.Optional[int]:
     vset = candidates(column, ncol, range(1, ncol))
     hset = candidates(row, nrow, range(1, nrow))    
 
-    print(f'refl: final: {vset = } {hset = }')
-    assert len(vset) <= 1
-    assert len(hset) <= 1
+    #print(f'refl({smudge=}): final: {vset = } {hset = }')
+    if not smudge:
+        assert len(vset) <= 1
+        assert len(hset) <= 1
+        assert len(hset) != len(vset)
     
-    def one_or_none(s):
-        assert len(s) <= 1  
-        return s.pop() if len(s) == 1 else None
-    return tuple(map(one_or_none, (vset, hset)))
+    for pos in vset: yield ('vert', pos)
+    for pos in hset: yield ('horz', pos)
 
-def score(grid: list[str]) -> int:
-    nrow, ncol = len(grid), len(grid[0])
-
-    pprint(grid)
-    print()
-    
-    vpos, hpos = find_reflections(grid, nrow, ncol)
-    assert (vpos is None) != (hpos is None)
-
-    if vpos is not None:
-        return vpos
-    else:
-        return 100 * hpos
+def score(kind, pos):
+    if kind == 'vert': return pos
+    if kind == 'horz': return 100 * pos
+    assert False, "shouldn't get here"
 
 def solve1(sections: list[list[str]]) -> int:
     s = iter(sections)
-    s = map(score, s)
-    total = sum(s)
-    return total
+    s = map(lambda g: (g, len(g), len(g[0])), s)
+    s = map(star(find_refl_lines), s)
+    s = map(set, s)
+    s = map(set.pop, s)
+    s = map(star(score), s)
+    return sum(s)
+    
+def mapf(*funcs):
+    def _exec(*args):
+        return tuple(f(*args) for f in funcs)
+    return _exec
 
 def solve2(sections: list[list[str]], expand=5) -> int:
+    def apply_smudges(grid, nrow, ncol):
+        orig = set(find_refl_lines(grid, nrow, ncol))
+        smudged = set()
+        for r, c in product(nrow, ncol):
+            smudged |= set(find_refl_lines(grid, nrow, ncol, smudge=(r, c)))
+        new = smudged - orig
+        print(f'solve2: {orig = } {smudged = } {new = }')
+        assert len(new) == 1
+        return new.pop()
+    s = iter(sections)
+    s = observe(pprint, s)
+    s = map(lambda g: (g, len(g), len(g[0])), s)
+    s = map(star(apply_smudges), s)
+    s = map(star(score), s)
+    return sum(s)
     return -1
     
 def part1(fname: str):
