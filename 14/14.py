@@ -65,12 +65,9 @@ def load(grid) -> int:
 def solve1(sections: list[list[str]]) -> int:
     grid = np.array(list(map(list, sections[0])), dtype=str)
     nrow, ncol = grid.shape
-    print(f'#1: {(nrow, ncol) = }')
     assert nrow == ncol
-    #pprint(grid)
+
     for col in range(0, ncol): slide_north(grid, col)
-    print()
-    #pprint(grid)
     
     return load(grid)
 
@@ -83,6 +80,7 @@ def solve2(sections: list[list[str]]) -> int:
         for i in range(4):
             for col in range(0, ncol): slide_north(grid, col)
             grid = np.rot90(grid, k=3)
+    
     seen = {}
     N = 1000000000
     for cycle in range(1, N + 1):
@@ -97,11 +95,13 @@ def solve2(sections: list[list[str]]) -> int:
     cycle_len = end - start
     repeats = (N - end) // cycle_len
     restart = end + repeats * cycle_len
-    print(f'{(start, end) = }')
-    print(f'{(cycle_len, repeats, restart) = }')
+
+    #print(f'{(start, end) = }')
+    #print(f'{(cycle_len, repeats, restart) = }')
     
     for cycle in range(N - restart):
         spin_cycle()
+
     return load(grid)
 
 def part1(fname: str):
