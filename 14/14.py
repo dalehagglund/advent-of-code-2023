@@ -85,21 +85,21 @@ def solve2(sections: list[list[str]]) -> int:
     N = 1000000000
     for cycle in range(1, N + 1):
         spin_cycle()
-        t = tuple(map(tuple, grid))
+
         if cycle % 10000 == 0: print(f'{cycle = } {hash(t) = } {load(grid) = }')
+        t = tuple(map(tuple, grid))
         if t in seen:
             start, end = seen[t], cycle
             break
         seen[t] = cycle
     
     cycle_len = end - start
-    repeats = (N - end) // cycle_len
-    restart = end + repeats * cycle_len
+    extra = (N - end) % cycle_len
 
     #print(f'{(start, end) = }')
-    #print(f'{(cycle_len, repeats, restart) = }')
+    #print(f'{(cycle_len, extra) = }')
     
-    for cycle in range(N - restart):
+    for cycle in range(extra):
         spin_cycle()
 
     return load(grid)
