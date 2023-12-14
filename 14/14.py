@@ -23,11 +23,13 @@ import operator
 
 from tools import *
 
+def rotate_grid_right(grid):
+    return np.rot90(grid)
+
 def slide_north(grid, col):
-    nrow, ncol = len(grid), len(grid[0])
-    
-    def at(r): return grid[r][col]
-    def setpos(r, val): grid[r][col] = val
+    nrow, ncol = grid.shape
+    def at(r): return grid[r, col]
+    def setpos(r, val): grid[r, col] = val
     
     def span_to_rock(start) -> tuple[int, int, int]:
         ocount = dotcount = 0
@@ -54,15 +56,17 @@ def slide_north(grid, col):
         start = span_rocks(rockpos)
         
 def load(grid) -> int:
-    nrow, ncol = len(grid), len(grid[0])
+    nrow, ncol = grid.shape
     return sum(
-        nrow - r if grid[r][c] == "O" else 0
+        nrow - r if grid[r, c] == "O" else 0
         for r, c in product(nrow, ncol)
     )
     
 def solve1(sections: list[list[str]]) -> int:
-    grid = list(map(list, sections[0]))
-    nrow, ncol = len(grid), len(grid[0])
+    grid = np.array(list(map(list, sections[0])), dtype=str)
+    nrow, ncol = grid.shape
+    print(f'#1: {(nrow, ncol) = }')
+    assert nrow == ncol
     #pprint(grid)
     for col in range(0, ncol): slide_north(grid, col)
     print()
@@ -70,8 +74,35 @@ def solve1(sections: list[list[str]]) -> int:
     
     return load(grid)
 
-def solve2(sections: list[list[str]], expand=5) -> int:
-    return -1
+def solve2(sections: list[list[str]]) -> int:
+    grid = np.array(list(map(list, sections[0])), dtype=str)
+    nrow, ncol = grid.shape
+
+    def spin_cycle():
+        nonlocal grid
+        for i in range(4):
+            for col in range(0, ncol): slide_north(grid, col)
+            grid = np.rot90(grid, k=3)
+    seen = {}
+    N = 1000000000
+    for cycle in range(1, N + 1):
+        spin_cycle()
+        t = tuple(map(tuple, grid))
+        if cycle % 10000 == 0: print(f'{cycle = } {hash(t) = } {load(grid) = }')
+        if t in seen:
+            start, end = seen[t], cycle
+            break
+        seen[t] = cycle
+    
+    cycle_len = end - start
+    repeats = (N - end) // cycle_len
+    restart = end + repeats * cycle_len
+    print(f'{(start, end) = }')
+    print(f'{(cycle_len, repeats, restart) = }')
+    
+    for cycle in range(N - restart):
+        spin_cycle()
+    return load(grid)
 
 def part1(fname: str):
     with open(fname) as f:
