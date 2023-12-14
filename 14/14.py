@@ -23,8 +23,52 @@ import operator
 
 from tools import *
 
+def slide_north(grid, col):
+    nrow, ncol = len(grid), len(grid[0])
+    
+    def at(r): return grid[r][col]
+    def setpos(r, val): grid[r][col] = val
+    
+    def span_to_rock(start) -> tuple[int, int, int]:
+        ocount = dotcount = 0
+        r = start
+        while r < nrow and at(r) != "#":
+            if at(r) == ".":
+                dotcount += 1
+            else:
+                ocount += 1
+            r += 1
+        return (r, dotcount, ocount)
+        
+    def span_rocks(start) -> int:
+        if start == nrow: return start
+        while start < nrow and at(start) == '#':
+            start += 1
+        return start
+        
+    start = 0
+    while start < nrow:
+        rockpos, ndots, nfloats = span_to_rock(start)
+        for r, char in zip(range(start, rockpos), "O" * nfloats + "." * ndots):
+            setpos(r, char)
+        start = span_rocks(rockpos)
+        
+def load(grid) -> int:
+    nrow, ncol = len(grid), len(grid[0])
+    return sum(
+        nrow - r if grid[r][c] == "O" else 0
+        for r, c in product(nrow, ncol)
+    )
+    
 def solve1(sections: list[list[str]]) -> int:
-    return -1
+    grid = list(map(list, sections[0]))
+    nrow, ncol = len(grid), len(grid[0])
+    #pprint(grid)
+    for col in range(0, ncol): slide_north(grid, col)
+    print()
+    #pprint(grid)
+    
+    return load(grid)
 
 def solve2(sections: list[list[str]], expand=5) -> int:
     return -1
