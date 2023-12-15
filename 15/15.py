@@ -45,18 +45,22 @@ def lens_pos(lens, box):
             return i
     return len(box)
 
-def remove_lens(lens: str, boxes: list) -> int:
-    for box in boxes:
-        index = lens_pos(lens, box)
-        if index < len(box):
-            box.pop(index)
-            return
-        
+def remove_lens(lens: str, box: list):
+    index = lens_pos(lens, box)
+    if index < len(box):
+        box.pop(index)
+
 def show_boxes(boxes, indent=0):
     prefix = " " * indent
     for i, box in enumerate(boxes):
         if len(box) == 0: continue
         print(f'{prefix}box {i}: {box}')
+
+def box_power(b, box):
+    power = 0
+    for pos, (lens, focal_len) in enumerate(box):
+        power += (b + 1) * (pos + 1) * focal_len
+    return power
 
 def solve2(sections: list[list[str]]) -> int:
     boxes: list[tuple[str, int]] = list([] for _ in range(255))
@@ -66,7 +70,7 @@ def solve2(sections: list[list[str]]) -> int:
     for lens, op, arg in s:
         b = HASH(lens)
         if op == '-':
-            remove_lens(lens, boxes)
+            remove_lens(lens, boxes[b])
         elif op == '=':
             focal = int(arg)
             box = boxes[b]
@@ -75,14 +79,10 @@ def solve2(sections: list[list[str]]) -> int:
                 box[pos] = (lens, focal)
             else:
                 box.append((lens, focal))
-        # print('after: ', lens, op, arg)
-        #show_boxes(boxes, indent=4)
         
-    total_power = 0
-    for b, box in enumerate(boxes):
-        for pos, (lens, focal_len) in enumerate(box):
-            total_power += (b + 1) * (pos + 1) * focal_len
-    return total_power
+    s = enumerate(boxes)
+    s = map(star(box_power), s)
+    return sum(s)
 
 def part1(fname: str):
     with open(fname) as f:
