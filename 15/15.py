@@ -38,10 +38,51 @@ def solve1(sections: list[list[str]]) -> int:
     s = line.split(",")
     s = map(HASH, s)
     return sum(s)
-    
+
+def lens_pos(lens, box):
+    for i, (label, _) in enumerate(box):
+        if label == lens:
+            return i
+    return len(box)
+
+def remove_lens(lens: str, boxes: list) -> int:
+    for box in boxes:
+        index = lens_pos(lens, box)
+        if index < len(box):
+            box.pop(index)
+            return
+        
+def show_boxes(boxes, indent=0):
+    prefix = " " * indent
+    for i, box in enumerate(boxes):
+        if len(box) == 0: continue
+        print(f'{prefix}box {i}: {box}')
 
 def solve2(sections: list[list[str]]) -> int:
-    return -1
+    boxes: list[tuple[str, int]] = list([] for _ in range(255))
+    line = sections[0][0]
+    s = line.split(",")
+    s = map(partial(re.split, r'([-=])'), s)
+    for lens, op, arg in s:
+        b = HASH(lens)
+        if op == '-':
+            remove_lens(lens, boxes)
+        elif op == '=':
+            focal = int(arg)
+            box = boxes[b]
+            pos = lens_pos(lens, box)
+            if pos < len(box):
+                box[pos] = (lens, focal)
+            else:
+                box.append((lens, focal))
+        # print('after: ', lens, op, arg)
+        #show_boxes(boxes, indent=4)
+        
+    total_power = 0
+    for b, box in enumerate(boxes):
+        for pos, (lens, focal_len) in enumerate(box):
+            total_power += (b + 1) * (pos + 1) * focal_len
+    return total_power
 
 def part1(fname: str):
     with open(fname) as f:
