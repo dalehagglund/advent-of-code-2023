@@ -23,8 +23,22 @@ import operator
 
 from tools import *
 
+def HASH(s: str) -> int:
+    current = 0
+    for code in map(ord, s):
+        current += code
+        current *= 17
+        current %= 256
+    return current
+
 def solve1(sections: list[list[str]]) -> int:
-    return -1
+    assert len(sections) == 1
+    assert len(sections[0]) == 1
+    line = sections[0][0]
+    s = line.split(",")
+    s = map(HASH, s)
+    return sum(s)
+    
 
 def solve2(sections: list[list[str]]) -> int:
     return -1
