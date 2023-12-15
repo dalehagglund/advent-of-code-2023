@@ -62,6 +62,13 @@ def box_power(b, box):
         power += (b + 1) * (pos + 1) * focal_len
     return power
 
+def update_lens(lens, focal_len, box):
+    pos = lens_pos(lens, box)
+    if pos < len(box):
+        box[pos] = (lens, focal_len)
+    else:
+        box.append((lens, focal_len))
+
 def solve2(sections: list[list[str]]) -> int:
     boxes: list[tuple[str, int]] = list([] for _ in range(255))
     line = sections[0][0]
@@ -72,13 +79,7 @@ def solve2(sections: list[list[str]]) -> int:
         if op == '-':
             remove_lens(lens, boxes[b])
         elif op == '=':
-            focal = int(arg)
-            box = boxes[b]
-            pos = lens_pos(lens, box)
-            if pos < len(box):
-                box[pos] = (lens, focal)
-            else:
-                box.append((lens, focal))
+            update_lens(lens, int(arg), boxes[b])
         
     s = enumerate(boxes)
     s = map(star(box_power), s)
