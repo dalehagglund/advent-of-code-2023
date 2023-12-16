@@ -96,13 +96,13 @@ def follow_beam(grid, startpos, startdir):
 
         at_pos = grid[curpos]
         if at_pos == '.':
-            queue.appendleft((curpos + curdir, curdir))
+            queue.append((curpos + curdir, curdir))
         elif at_pos in '''-|''':
             for nextdir in split[(at_pos, curdir)]:
-                queue.appendleft((curpos + nextdir, nextdir))
+                queue.append((curpos + nextdir, nextdir))
         elif at_pos in '''\/''':
             nextdir = reflect[(at_pos, curdir)] 
-            queue.appendleft((curpos + nextdir, nextdir))
+            queue.append((curpos + nextdir, nextdir))
         else:
             assert False, f"unexpected char at {curpos = }: {at_pos = }"
     
@@ -118,14 +118,14 @@ def energized(grid, startpos, startdir):
 
 def solve1(sections: list[list[str]]) -> int:
     grid = make_grid(sections[0])
-    show_grid(grid)
+    #show_grid(grid)
     return energized(grid, Point(0, 0), Dir.R)
 
 def solve2(sections: list[list[str]]) -> int:
     
     grid = make_grid(sections[0])
     nrow, ncol = grid.shape
-    show_grid(grid)
+    #show_grid(grid)
     
     s = itertools.chain(
         ( (Point(0,        c), Dir.D) for c in range(ncol) ),
