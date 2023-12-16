@@ -47,11 +47,6 @@ class Dir:
     L = ( 0, -1)
     R = ( 0, +1)
     
-pass_through_dirs = {
-    '-': (Dir.L, Dir.R),
-    '|': (Dir.U, Dir.D),
-}
-
 split = {
     ('-', Dir.U): (Dir.L, Dir.R),
     ('-', Dir.D): (Dir.L, Dir.R),
@@ -134,10 +129,7 @@ def solve2(sections: list[list[str]]) -> int:
         ( (Point(nrow - 1, c), Dir.U) for c in range(ncol) ),
     )
     #s = observe(partial(print, '#1: '), s)
-    s = map(
-        star(lambda pos, dir: energized(grid, pos, dir)),
-        s
-    )
+    s = map(star(partial(energized, grid)), s)
     #s = observe(partial(print, '#2: '), s)
     return max(s)
     return -1
