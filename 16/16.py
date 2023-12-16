@@ -108,21 +108,38 @@ def follow_beam(grid, startpos, startdir):
     
 def make_grid(lines: list[str]) -> np.array:
     return np.array(list(map(list, lines)))
+    
+def energized(grid, startpos, startdir):
+    counts = np.zeros(grid.shape)
+    for point, dir in follow_beam(grid, startpos, startdir):
+        #print(point, dir)
+        counts[point] += 1
+    return np.sum(counts > 0)
 
 def solve1(sections: list[list[str]]) -> int:
     grid = make_grid(sections[0])
     show_grid(grid)
-    counts = np.zeros(grid.shape)
-
-    for point, dir in follow_beam(grid, Point(0, 0), Dir.R):
-        #print(point, dir)
-        counts[point] += 1
-        
-    print(counts)
-    
-    return np.sum(counts > 0)
+    return energized(grid, Point(0, 0), Dir.R)
 
 def solve2(sections: list[list[str]]) -> int:
+    
+    grid = make_grid(sections[0])
+    nrow, ncol = grid.shape
+    show_grid(grid)
+    
+    s = itertools.chain(
+        ( (Point(0,        c), Dir.D) for c in range(ncol) ),
+        ( (Point(r,        0), Dir.R) for r in range(nrow) ),
+        ( (Point(r, ncol - 1), Dir.L) for r in range(nrow) ),
+        ( (Point(nrow - 1, c), Dir.U) for c in range(ncol) ),
+    )
+    #s = observe(partial(print, '#1: '), s)
+    s = map(
+        star(lambda pos, dir: energized(grid, pos, dir)),
+        s
+    )
+    #s = observe(partial(print, '#2: '), s)
+    return max(s)
     return -1
     
 def part1(fname: str):
