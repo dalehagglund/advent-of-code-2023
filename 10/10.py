@@ -35,58 +35,78 @@ def find_interior_size(graph, start):
             for neighbour
             in graph.neighbours(label)
         )
-
-    def extend(point):
-        assert point in graph._graph
-        assert point not in curve
-        r, c = point
-        while (r, c) in graph._graph:
-            yield (r, c)
-            r += 1
-
-    def crossings(point):
-        ray = collections.deque(extend(point))
-        segments = []
         
-        def followed_by(p1, p2):
-            return p1 in graph._graph[p2]._adjacent
-
-        while ray:
-            while ray and graph.at(ray[0]) == ".":
-                ray.popleft()
-            if not ray:
-                break
-            seg = [ray.popleft()]
-            while ray and followed_by(seg[-1], ray[0]):
-                seg.append(ray.popleft())
-            segments.append(seg)
-            
-        n = sum(
-            2 if len(seg) >= 2 else 1
-            for seg 
-            in segments
-        )
-        if (
-            segments and
-            len(segments[-1]) > 1 and
-            segments[-1][-1][0]  == graph._nrow - 1
-        ):
-            print("!adjust")
-            n += 1
-        print(f'crossings({point}) - {n}: {segments = }')
-        return n
-
-    interior = set()
-    exterior = set()
+    def one(collection):
+        assert len(collection) == 1
+        return next(iter(collection))
     
-    for point in graph.labels():
-        if point in curve: continue
-        if crossings(point) % 2 == 0:
-            exterior.add(point)
-        else:
-            interior.add(point)
-  
-    return len(interior)
+    def is_vertex(node):
+        at = graph.at(node)
+        if at in "LJ7F": return True
+        if at in "-|": return False
+        assert at == "S"
+        n1, n2 = graph.neighbours(node)
+        if n1[0] == n2[0] or n1[1] == n2[1]: return False
+        return True
+        
+    
+    def find_vertices(curve, start):
+        import random
+        
+        node  = start
+        prevnode = None
+        startcount = 0
+        
+        while True:
+            assert node in curve
+            if is_vertex(node):
+                yield node
+            if node == start: startcount += 1
+            if node == start and startcount == 2:
+                break
+            neighbours = set(graph.neighbours(node))
+            if prevnode is None:
+                prevnode, node = (
+                    node,
+                    neighbours.pop()
+                )
+            else:
+                prevnode, node = (
+                    node, 
+                    one(neighbours - {prevnode})
+                )
+                
+    
+    def area(vertices):
+        # via the trapezoid form of the Shoelace Formula, 
+        # and assuming vertices[-1] == vertices[0]
+        return abs(sum(
+            (y2 + y1) * (x1 - x2)
+            for (y1, x1), (y2, x2)
+            in itertools.pairwise(vertices)
+        )) / 2
+
+    vertices = list(find_vertices(curve, start))
+    
+    # use Pick's Theorem, which says that for a simple polygone with 
+    # integer coordinates
+    #
+    #    A = I + B/2 - 1
+    #
+    # where A is the area, I is the number of lattice points inside
+    # the polgon, and B is the number of lattice points on the boundary.
+    #
+    # Solving for IO
+    #
+    #    I = A - B/2 + 1
+    #
+    
+    B = len(curve)
+    A = area(vertices)
+
+    print(f'{(A, B) = }')
+    return A - B//2 + 1
+        
 
 def find_max_depth(graph, start):
     max_depth = float('-inf')
