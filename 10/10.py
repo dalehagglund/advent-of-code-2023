@@ -48,7 +48,6 @@ def find_interior_size(graph, start):
         n1, n2 = graph.neighbours(node)
         if n1[0] == n2[0] or n1[1] == n2[1]: return False
         return True
-        
     
     def find_vertices(curve, start):
         import random
@@ -79,7 +78,11 @@ def find_interior_size(graph, start):
     
     def area(vertices):
         # via the trapezoid form of the Shoelace Formula, 
-        # and assuming vertices[-1] == vertices[0]
+        # and assuming vertices[-1] == vertices[0].
+        # It turns not to matter which coordinate you consider
+        # to be x and which to be y: as long as your
+        # consistent, the resulting polygon might be rotated,
+        # but the area won't change because of that.
         return abs(sum(
             (y2 + y1) * (x1 - x2)
             for (y1, x1), (y2, x2)
@@ -96,7 +99,7 @@ def find_interior_size(graph, start):
     # where A is the area, I is the number of lattice points inside
     # the polgon, and B is the number of lattice points on the boundary.
     #
-    # Solving for IO
+    # Solving for I
     #
     #    I = A - B/2 + 1
     #
@@ -104,9 +107,7 @@ def find_interior_size(graph, start):
     B = len(curve)
     A = area(vertices)
 
-    print(f'{(A, B) = }')
     return A - B//2 + 1
-        
 
 def find_max_depth(graph, start):
     max_depth = float('-inf')
