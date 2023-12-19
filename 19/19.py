@@ -70,13 +70,16 @@ def part1(fname: str):
         
     print(f'*** part 1 ***', total)
     
-def count_accepted(flowset, flow, pos, parts) -> int:
-    print(f'{(flow.name(), pos, parts) = }')
+def count_accepted(flowset, flow, pos, parts, depth=0) -> int:
+    recur = partial(count_accepted, flowset, depth=depth+1)
+
+    prefix = " " * (depth * 2)
+    print(f'ca> {prefix}{(flow.name(), pos, parts) = }')
 
     if parts.size() == 0:
         return 0
 
-    rule = flow[pos]    
+    rule = flow[pos]
     out = rule.out()
     
     if pos == len(rules) - 1 and out == "A":
@@ -84,24 +87,24 @@ def count_accepted(flowset, flow, pos, parts) -> int:
     elif pos == len(rules) - 1 and out == "R":
         return 0
     elif pos == len(rules) - 1:
-        return count_accepted(flowset, flowset[out], 0, parts)
+        return recur(flowset[out], 0, parts)
         
     assert pos + 1 < len(rules)
 
     trueparts, falseparts = rule.split_range(parts)    
     if out == "A":
         return (
-            truerange.size() + 
-            count_accepted(flowset, rules, pos + 1, falseparts)
+            trueparts.size() + 
+            recur(rules,        pos + 1, falseparts)
         )
     elif out == "R":
         return (
-            count_accepted(flowset, rules, pos + 1, falseparts)
+            recur(rules,        pos + 1, falseparts)
         )
     else:
         return (
-            count_accepted(flowset, flowset[out], 0, trueparts) +
-            count_accepted(flowset, rules, pos + 1, falseparts)
+            recur(rules,        pos + 1, falseparts) +
+            recur(flowset[out],       0, trueparts)
         )
 
     assert False, "shouldn't get here"

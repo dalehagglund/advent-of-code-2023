@@ -21,8 +21,16 @@ class Part:
         s = map(star(lambda name, val: (name, int(val))), s)
         kw = dict(s)
         return cls(**kw)
-
-Interval = tuple[int, int]
+        
+@dataclass(frozen=True)
+class PartRange:
+    x: range
+    m: range
+    a: range
+    s: range
+    
+    def size(self):
+        return len(self.x) * len(self.m) * len(self.a) * len(self.s)
                 
 @dataclass(frozen=True)
 class Predicate:
@@ -37,7 +45,19 @@ class Predicate:
 
     def __call__(self, p: Part):
         return self._OPTAB[self._op](getattr(p, self._left), self._right)
-        
+    
+    def splitparts(self, p: PartRange) -> tuple[PartRange, PartRange]:
+        interval = getattr(r, self._left)
+        cutpoint = self._right
+        assert len(interval) > 0
+
+        if curpoint < interval.start:
+            pass
+        elif cutpoint >= interval.stop:
+            pass
+        else:
+            pass
+            
 @dataclass(frozen=True)
 class TruePredicate:
     def __call__(self, p: Part): return True

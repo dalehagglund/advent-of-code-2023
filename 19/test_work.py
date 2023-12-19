@@ -37,3 +37,7 @@ def test_workflow():
     assert flow.out() == { "foo", "bar" }
     assert flow.eval(failpart) == "bar"
     assert flow.eval(truepart) == "foo"
+    
+def test_partrange_size():
+    p = PartRange(range(10), range(10), range(10), range(10))
+    assert p.size() == 10**4
