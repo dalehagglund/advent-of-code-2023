@@ -22,6 +22,7 @@ import time
 import operator
 
 from tools import *
+from work import *
 
 def solve1(sections: list[list[str]]) -> int:
     return -1
@@ -32,7 +33,29 @@ def solve2(sections: list[list[str]]) -> int:
 def part1(fname: str):
     with open(fname) as f:
         sections = read_sections(f)
-    print(f'*** part 1 ***', solve1(sections))
+    
+    s = iter(sections[0])
+    s = map(Flow.from_str, s)    
+    workflows = dict(
+        (flow.name(), flow)
+        for flow
+        in s
+    )
+    assert 'in' in workflows
+    
+    s = sections[1]
+    parts = list(map(Part.from_str, s))
+    
+    total = 0
+    for part in parts:
+        flowname = 'in'
+        while flowname not in ('R', 'A'):
+            flowname = workflows[flowname].eval(part)
+        if flowname == "A":
+            total += part.x + part.m + part.a + part.s
+            print('Accepted: ', part)
+        
+    print(f'*** part 1 ***', total)
     
 def part2(fname: str):
     with open(fname) as f:
