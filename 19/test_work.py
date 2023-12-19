@@ -11,16 +11,21 @@ def test_part():
 def test_default_rule():
     part = Part()
     rule = Rule.from_str("xyzzy")
+    assert rule.out() == "xyzzy"
     assert rule.eval(part) == "xyzzy"
     
 def test_conditional_rule():
     part = Part.from_str("{x=1,m=2,a=3,s=4}")
     
     truerule  = Rule.from_str("x<3:less")
-    falserule = Rule.from_str("x>1:greater") 
-    assert truerule.eval(part) == "less"
-    assert falserule.eval(part) == None
+    falserule = Rule.from_str("x>1:greater")
     
+    assert truerule.eval(part) == "less"
+    assert truerule.out() == "less"
+    
+    assert falserule.eval(part) == None
+    assert falserule.out() == "greater"
+
 def test_workflow_name():
     flow = Flow.from_str("a{R}")
     assert flow.name() == "a"
@@ -29,6 +34,6 @@ def test_workflow():
     flow = Flow.from_str("a{x>3:foo,bar}")
     failpart = Part(x=3)
     truepart = Part(x=4)
-    
+    assert flow.out() == { "foo", "bar" }
     assert flow.eval(failpart) == "bar"
     assert flow.eval(truepart) == "foo"

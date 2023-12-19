@@ -24,6 +24,19 @@ import operator
 from tools import *
 from work import *
 
+def check_is_tree(flowset: dict[str, Flow]) -> bool:
+    root = 'in'
+    c = collections.Counter()
+    
+    for name, flow in flowset.items():
+        c.update(flow.out() - { "A", "R" })
+        
+    assert c[root] == 0
+    ckeys = set(c.keys())
+    fkeys = set(flowset.keys()) - { "in" }
+    assert ckeys == fkeys
+    assert all(count == 1 for key, count in c.items())
+
 def solve1(sections: list[list[str]]) -> int:
     return -1
 
@@ -42,6 +55,7 @@ def part1(fname: str):
         in s
     )
     assert 'in' in workflows
+    check_is_tree(workflows)
     
     s = sections[1]
     parts = list(map(Part.from_str, s))
@@ -53,10 +67,45 @@ def part1(fname: str):
             flowname = workflows[flowname].eval(part)
         if flowname == "A":
             total += part.x + part.m + part.a + part.s
-            print('Accepted: ', part)
         
     print(f'*** part 1 ***', total)
     
+def count_accepted(flowset, flow, pos, parts) -> int:
+    print(f'{(flow.name(), pos, parts) = }')
+
+    if parts.size() == 0:
+        return 0
+
+    rule = flow[pos]    
+    out = rule.out()
+    
+    if pos == len(rules) - 1 and out == "A":
+        return parts.size()
+    elif pos == len(rules) - 1 and out == "R":
+        return 0
+    elif pos == len(rules) - 1:
+        return count_accepted(flowset, flowset[out], 0, parts)
+        
+    assert pos + 1 < len(rules)
+
+    trueparts, falseparts = rule.split_range(parts)    
+    if out == "A":
+        return (
+            truerange.size() + 
+            count_accepted(flowset, rules, pos + 1, falseparts)
+        )
+    elif out == "R":
+        return (
+            count_accepted(flowset, rules, pos + 1, falseparts)
+        )
+    else:
+        return (
+            count_accepted(flowset, flowset[out], 0, trueparts) +
+            count_accepted(flowset, rules, pos + 1, falseparts)
+        )
+
+    assert False, "shouldn't get here"
+
 def part2(fname: str):
     with open(fname) as f:
         sections = read_sections(f)

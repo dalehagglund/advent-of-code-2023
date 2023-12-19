@@ -21,6 +21,8 @@ class Part:
         s = map(star(lambda name, val: (name, int(val))), s)
         kw = dict(s)
         return cls(**kw)
+
+Interval = tuple[int, int]
                 
 @dataclass(frozen=True)
 class Predicate:
@@ -45,8 +47,8 @@ class Rule:
     _predicate: ty.Callable[[Part], bool]
     _flow: str
 
-    def flow(self): return self._flow
-
+    def out(self): return self._flow
+    
     def eval(self, p: Part) -> ty.Optional[str]:
         return self._flow if self._predicate(p) else None
 
@@ -81,6 +83,9 @@ class Flow:
         else:
             assert False, "fell off of rule chain"
         return ruleval
+        
+    def out(self):
+        return set(r.out() for r in self._rules)
 
     @classmethod
     def from_str(cls, flowspec: str) -> ty.Self:
