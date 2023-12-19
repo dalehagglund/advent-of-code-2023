@@ -41,3 +41,22 @@ def test_workflow():
 def test_partrange_size():
     p = PartRange(range(10), range(10), range(10), range(10))
     assert p.size() == 10**4
+    
+def test_partrange_splitting_():
+    xrange = range(50, 60)
+    parts = PartRange(x=xrange, m=range(5), a=range(5), s=range(5))
+    rule = Rule.from_str("x<55:xyzzy")
+    
+    t, f = rule._predicate.splitparts(parts)
+
+    assert t.m == t.a == t.s == range(5)
+    assert f.m == f.a == f.s == range(5)
+    assert t.x != f.x
+    
+    assert min(t.x.start, f.x.start) == xrange.start
+    assert max(t.x.stop, f.x.stop) == xrange.stop
+    
+    assert t.x.stop == f.x.start or f.x.stop == t.x.start
+    
+    assert sum(rule._predicate(Part(x=n)) for n in t.x) == len(t.x)
+    assert sum(rule._predicate(Part(x=n)) for n in f.x) == 0

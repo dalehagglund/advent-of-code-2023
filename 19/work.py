@@ -1,4 +1,5 @@
 import typing as ty
+import dataclasses
 from dataclasses import dataclass, field
 import functools
 from functools import partial
@@ -46,18 +47,50 @@ class Predicate:
     def __call__(self, p: Part):
         return self._OPTAB[self._op](getattr(p, self._left), self._right)
     
-    def splitparts(self, p: PartRange) -> tuple[PartRange, PartRange]:
-        interval = getattr(r, self._left)
-        cutpoint = self._right
+    def splitparts(self, parts: PartRange) -> tuple[PartRange, PartRange]:
+        field = self._left
+        cut = self._right
+        op = self._op
+
+        interval = getattr(parts, field)
         assert len(interval) > 0
 
-        if curpoint < interval.start:
-            pass
-        elif cutpoint >= interval.stop:
-            pass
+        def split(r: range, n):
+            assert r.start <= n <= r.stop
+            return range(r.start, n), range(n, r.stop)
+        
+        lo, hi = interval.start, interval.stop
+        if cut < lo:
+            if op == '<': t, f = split(interval, lo)
+            else:         t, f = split(interval, hi)
+        elif cut == lo:
+            if op == '<': t, f = split(interval, lo)
+            else:         t, f = reversed(split(interval, lo+1))
+        elif lo < cut < hi:
+            assert len(interval) > 1
+            if op == '<': t, f = split(interval, cut)
+            else:         t, f = reversed(split(interval, cut+1))
+        elif hi == cut:
+            if op == '<': t, f = split(interval, hi)
+            else:         t, f = reversed(split(interval, hi))
+        elif hi < cut:
+            if op == '<': t, f = split(interval, hi)
+            else:         t, f = split(interval, lo)
         else:
-            pass
+            assert False, f"shouldn't get here: {(op, cut, interval) = }"
             
+        # assert min(t.start, f.start) == lo
+        # assert max(t.stop, f.stop) == hi
+        # assert t.stop == f.start or f.stop == t.start
+        
+        # assert all(... for n in t)
+        # assert all(not ... for  n in f)
+        
+        return (
+            dataclasses.replace(parts, **{field: t}), 
+            dataclasses.replace(parts, **{field: f})
+        )
+
 @dataclass(frozen=True)
 class TruePredicate:
     def __call__(self, p: Part): return True
