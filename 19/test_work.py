@@ -42,21 +42,70 @@ def test_partrange_size():
     p = PartRange(range(10), range(10), range(10), range(10))
     assert p.size() == 10**4
     
-def test_partrange_splitting_():
-    xrange = range(50, 60)
-    parts = PartRange(x=xrange, m=range(5), a=range(5), s=range(5))
-    rule = Rule.from_str("x<55:xyzzy")
-    
-    t, f = rule._predicate.splitparts(parts)
+def make_parts(xrange, default=range(5)) -> PartRange:
+    return PartRange(x=xrange, m=default, a=default, s=default)
 
-    assert t.m == t.a == t.s == range(5)
-    assert f.m == f.a == f.s == range(5)
-    assert t.x != f.x
+def test_partrange_splitting_fails_on_empty_interval():
+    part = make_parts(range(50, 50))
+    rule = Rule.from_str("x<10:xyzzy")
+    with pytest.raises(AssertionError):
+        _ = rule.split_parts(part)
+
+def is_unchanged(orig, new, fields: str) -> bool:
+    orig = dataclasses.asdict(orig)
+    new = dataclasses.asdict(new)
+    return all(orig[f] == new[f] for f in fields)
+
+def abuts(r1, r2) -> bool:
+    return r1.stop == r2.start or r2.stop == r1.start
+
+@pytest.mark.parametrize(
+    "lo,hi,op,cut",
+    [
+        (50, 60, "<", 49),
+        (50, 60, "<", 50),
+        (50, 60, "<", 51),
+        (50, 60, "<", 55),
+        (50, 60, "<", 59),
+        (50, 60, "<", 60),
+        (50, 60, "<", 61),
+        
+        (50, 51, "<", 49),
+        (50, 51, "<", 50),
+        (50, 51, "<", 51),
+        (50, 51, "<", 52),
+
+        (50, 60, ">", 49),
+        (50, 60, ">", 50),
+        (50, 60, ">", 51),
+        (50, 60, ">", 55),
+        (50, 60, ">", 59),
+        (50, 60, ">", 60),
+        (50, 60, ">", 61),
+
+        (50, 51, ">", 50),
+        (50, 51, ">", 51),
+        (50, 51, ">", 51),
+        (50, 51, ">", 52),
+    ]
+)
+def test_partrange_splitting(lo, hi, op, cut):
+    xrange = range(lo, hi)
+    parts = make_parts(xrange)
+    rule = Rule.from_str(f"x{op}{cut}:xyzzy")
+    
+    t, f = rule.split_parts(parts)
+
+    assert is_unchanged(parts, t, "mas")
+    assert is_unchanged(parts, f, "mas")
     
     assert min(t.x.start, f.x.start) == xrange.start
     assert max(t.x.stop, f.x.stop) == xrange.stop
     
-    assert t.x.stop == f.x.start or f.x.stop == t.x.start
+    assert len(t.x) + len(f.x) == len(parts.x)
+    assert abuts(t.x, f.x)
     
-    assert sum(rule._predicate(Part(x=n)) for n in t.x) == len(t.x)
-    assert sum(rule._predicate(Part(x=n)) for n in f.x) == 0
+    for n in xrange:
+        result = rule._predicate(Part(x=n))
+        if result: assert n in t.x
+        else:      assert n in f.x

@@ -47,7 +47,7 @@ class Predicate:
     def __call__(self, p: Part):
         return self._OPTAB[self._op](getattr(p, self._left), self._right)
     
-    def splitparts(self, parts: PartRange) -> tuple[PartRange, PartRange]:
+    def split_parts(self, parts: PartRange) -> tuple[PartRange, PartRange]:
         field = self._left
         cut = self._right
         op = self._op
@@ -78,14 +78,7 @@ class Predicate:
             else:         t, f = split(interval, lo)
         else:
             assert False, f"shouldn't get here: {(op, cut, interval) = }"
-            
-        # assert min(t.start, f.start) == lo
-        # assert max(t.stop, f.stop) == hi
-        # assert t.stop == f.start or f.stop == t.start
-        
-        # assert all(... for n in t)
-        # assert all(not ... for  n in f)
-        
+
         return (
             dataclasses.replace(parts, **{field: t}), 
             dataclasses.replace(parts, **{field: f})
@@ -101,6 +94,8 @@ class Rule:
     _flow: str
 
     def out(self): return self._flow
+    def split_parts(self, parts: PartRange) -> tuple[PartRange, PartRange]:
+        return self._predicate.split_parts(parts)
     
     def eval(self, p: Part) -> ty.Optional[str]:
         return self._flow if self._predicate(p) else None
