@@ -21,7 +21,25 @@ class Part:
         s = map(star(lambda name, val: (name, int(val))), s)
         kw = dict(s)
         return cls(**kw)
+                
+@dataclass(frozen=True)
+class Predicate:
+    _left: str
+    _op: str
+    _right: int
+    
+    _OPTAB = {
+        '<': operator.lt,
+        '>': operator.gt,
+    }
+
+    def __call__(self, p: Part):
+        return self._OPTAB[self._op](getattr(p, self._left), self._right)
         
+@dataclass(frozen=True)
+class TruePredicate:
+    def __call__(self, p: Part): return True
+
 @dataclass(frozen=True)
 class Rule:
     _predicate: ty.Callable[[Part], bool]
@@ -34,21 +52,16 @@ class Rule:
 
     @classmethod
     def from_str(cls, rulespec: str) -> ty.Self:
-        # eg, "a>2000:foo"
-        optab = {
-            '<': operator.lt,
-            '>': operator.gt,
-        }
+        # eg, "a>2000:foo" or "bar"
         
         if ":" in rulespec:
             pred, flow = rulespec.split(":")
             field, op, const = re.split(r'([<>])', pred)
-            predicate = lambda p: (
-                optab[op](getattr(p, field), int(const))
-            )
+            assert int(const) >= 1
+            predicate = Predicate(field, op, int(const))
         else:
             flow = rulespec
-            predicate = lambda p: True
+            predicate = TruePredicate()
             
         return cls(
             _predicate = predicate,
