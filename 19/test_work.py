@@ -109,3 +109,15 @@ def test_partrange_splitting(lo, hi, op, cut):
         result = rule._predicate(Part(x=n))
         if result: assert n in t.x
         else:      assert n in f.x
+
+#
+# we don't need to test the "true" predicates with just a string, since
+# they're always in the last position of a flow, and the Rule.split_parts()
+# method is never invoked on the final position.
+#
+# def test_partrange_splitting_with_terminal_rule():
+    # xrange = range(50, 60)
+    # parts = make_parts(xrange)
+    # rule = Rule.from_str(f"xyzzy")
+    
+    # t, f = rule.split_parts(parts)

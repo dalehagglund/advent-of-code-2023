@@ -135,6 +135,9 @@ class Flow:
     def out(self):
         return set(r.out() for r in self._rules)
 
+    def __len__(self): return len(self._rules)
+    def __getitem__(self, index): return self._rules[index]
+    
     @classmethod
     def from_str(cls, flowspec: str) -> ty.Self:
         name, rulespecs = re.split(r"[{}]", flowspec)[:-1]

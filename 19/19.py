@@ -43,17 +43,26 @@ def solve1(sections: list[list[str]]) -> int:
 def solve2(sections: list[list[str]]) -> int:
     return -1
 
-def part1(fname: str):
-    with open(fname) as f:
-        sections = read_sections(f)
-    
-    s = iter(sections[0])
+def parse_flows(section: list[str]):
+    s = iter(section)
     s = map(Flow.from_str, s)    
-    workflows = dict(
+    return dict(
         (flow.name(), flow)
         for flow
         in s
     )
+def part1(fname: str):
+    with open(fname) as f:
+        sections = read_sections(f)
+    
+    # s = iter(sections[0])
+    # s = map(Flow.from_str, s)    
+    # workflows = dict(
+        # (flow.name(), flow)
+        # for flow
+        # in s
+    # )
+    workflows = parse_flows(section[0])
     assert 'in' in workflows
     check_is_tree(workflows)
     
@@ -82,28 +91,29 @@ def count_accepted(flowset, flow, pos, parts, depth=0) -> int:
     rule = flow[pos]
     out = rule.out()
     
-    if pos == len(rules) - 1 and out == "A":
+    if pos == len(flow) - 1 and out == "A":
         return parts.size()
-    elif pos == len(rules) - 1 and out == "R":
+    elif pos == len(flow) - 1 and out == "R":
         return 0
-    elif pos == len(rules) - 1:
+    elif pos == len(flow) - 1:
         return recur(flowset[out], 0, parts)
         
-    assert pos + 1 < len(rules)
+    assert pos + 1 < len(flow)
+    assert not isinstance(rule, TruePredicate)
 
-    trueparts, falseparts = rule.split_range(parts)    
+    trueparts, falseparts = rule.split_parts(parts)    
     if out == "A":
         return (
             trueparts.size() + 
-            recur(rules,        pos + 1, falseparts)
+            recur(flow,         pos + 1, falseparts)
         )
     elif out == "R":
         return (
-            recur(rules,        pos + 1, falseparts)
+            recur(flow,         pos + 1, falseparts)
         )
     else:
         return (
-            recur(rules,        pos + 1, falseparts) +
+            recur(flow,         pos + 1, falseparts) +
             recur(flowset[out],       0, trueparts)
         )
 
@@ -112,7 +122,18 @@ def count_accepted(flowset, flow, pos, parts, depth=0) -> int:
 def part2(fname: str):
     with open(fname) as f:
         sections = read_sections(f)
-    print(f'*** part 2 ***', solve2(sections))
+        
+    workflows = parse_flows(sections[0])
+    assert 'in' in workflows
+    check_is_tree(workflows)
+
+    # no need to parse the part list, since we're solving a
+    # different problem.
+    
+    interval = range(1, 4001)
+    partcube = PartRange(interval, interval, interval, interval) 
+    count = count_accepted(workflows, workflows['in'], 0, partcube)
+    print(f'*** part 2 ***', count)
 
 def usage(message):
     prog = sys.argv[0]
